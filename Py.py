@@ -1,11 +1,11 @@
 import sys
-from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QStackedWidget, QTableWidget, QTableWidgetItem, QFormLayout, QLineEdit, QFileDialog)
-    
+from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QStackedWidget, QTableWidget, QTableWidgetItem, QFormLayout, QLineEdit, QFileDialog, QHeaderView, QSizePolicy)
 from PyQt6.QtCharts import QChart, QChartView, QBarSeries, QBarSet, QBarCategoryAxis, QValueAxis
 from PyQt6.QtGui import QPainter
 from PyQt6.QtCore import Qt
-
-from datos import listas 
+import numpy as np
+from scipy import stats
+from datos import listas
 from TablasIntervalos import generar_tabla_por_intervalos
 import subprocess
 import json
@@ -13,23 +13,20 @@ import json
 class FileSelector(QWidget):
     def __init__(self):
         super().__init__()
-        self.ubicacion = None  # Variable para almacenar la ubicación del archivo
+        self.ubicacion = None
         self.initUI()
 
     def initUI(self):
         layout = QVBoxLayout()
 
-        # Campo de texto para mostrar la ubicación del archivo
         self.file_input = QLineEdit(self)
         self.file_input.setPlaceholderText("src")
         layout.addWidget(self.file_input)
 
-        # Botón para abrir el diálogo de selección de archivo
         browse_button = QPushButton("📂", self)
         browse_button.clicked.connect(self.open_file_dialog)
         layout.addWidget(browse_button)
 
-        # Botón para guardar la ubicación del archivo
         save_button = QPushButton("Guardar Dirección del Archivo", self)
         save_button.clicked.connect(self.save_file_location)
         layout.addWidget(save_button)
@@ -40,135 +37,117 @@ class FileSelector(QWidget):
         file_name, _ = QFileDialog.getOpenFileName(self, "Seleccionar Archivo", "", "Todos los Archivos (*.*)")
         if file_name:
             self.file_input.setText(file_name)
-            self.ubicacion = file_name  # Guardar la ubicación del archivo en una variable
-
+            self.ubicacion = file_name
 
     def save_file_location(self):
         if self.ubicacion:
-            # Ejecutar el script readExcel.py pasando la ruta del archivo
             result = subprocess.run(['python', 'readExcel.py', self.ubicacion], capture_output=True, text=True)
-            
-            # Obtener los datos procesados del script readExcel.py
             data = json.loads(result.stdout.strip())
             print(f"Datos procesados: {data}")
-            
-            # Aquí podrías hacer algo con los datos procesados si es necesario
         else:
             print("No se ha seleccionado ningún archivo.")
-
 
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
-        datos = [11, 9, 8, 7, 11, 6, 11, 11, 11, 8, 6, 9, 7, 10, 11, 5, 9, 7, 8, 6, 5, 9, 7, 5, 5, 6, 8, 8, 8, 9, 11, 8, 8, 8, 10, 10, 8, 9, 7, 9, 6, 7, 9, 9, 11, 10, 7, 10, 8, 11, 10, 5, 5, 5, 6, 10, 6, 6, 10, 7, 9, 9, 10, 8, 7, 6, 10, 7, 9, 7]
-        data = listas(datos)
-        data2 = generar_tabla_por_intervalos(datos)
 
-        # Configurar el layout principal (horizontal)
+        datos = [360, 372, 388, 404, 414, 428, 441, 452, 466, 483]
+        datos2 = [360, 372, 388, 404, 414, 428, 441, 452, 466, 483]
+        self.data = listas(datos)  # Guardar data como atributo de la clase
+        self.data2 = generar_tabla_por_intervalos(datos2)
+
         main_layout = QHBoxLayout()
 
-        # Layout para los botones en el lado izquierdo
         button_layout = QVBoxLayout()
         self.buttons = {
             "Botón Lector": QPushButton("Lector de Archivos"),
             "Botón Tabla": QPushButton("Mostrar Tabla"),
-            "Botón Formulario": QPushButton("Mostrar resumen"),
+            "Botón Tabla2": QPushButton("Mostrar Tabla Intervalos"),
+            "Botón Formulario": QPushButton("Mostrar Resumen"),
             "Botón Gráfico": QPushButton("Mostrar Gráfico de Barras")
         }
 
+        # Configurar los botones para que se redimensionen automáticamente
         for button in self.buttons.values():
+            button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
             button_layout.addWidget(button)
 
-        # Crear el panel derecho usando QStackedWidget para cambiar entre diferentes vistas
         self.stack = QStackedWidget()
 
-        # Panel 2: Tabla
-        self.tablaIntervalos = QTableWidget(3, 3)  # Tabla con 3 filas y 3 columnas
-        self.tablaIntervalos.setRowCount(len(data['valores'])) 
-        self.tablaIntervalos.setColumnCount(14)
-        headers = ["x", "f", "f%", "fa", "fa%", "fd", "fd%", "x", "d", "f|d|", "f*d", "fd^2", "fd^3", "fd^4"]
-        self.tablaIntervalos.setHorizontalHeaderLabels(headers)
-        self.tablaIntervalos.verticalHeader().setVisible(False)
-        self.tablaIntervalos.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
-        
-        cell_width = 60
-        cell_height = 10
-        for i in range(14):
-            self.tablaIntervalos.setColumnWidth(i, cell_width)
-        self.tablaIntervalos.setFixedHeight(cell_height * len(datos))
+        self.table = QTableWidget()
+        self.setup_table(self.table, 14, self.data, headers=["x", "f", "f%", "fa", "fa%", "fd", "fd%", "x", "d", "f|d|", "f*d", "fd^2", "fd^3", "fd^4"])
 
-        self.fill_table(data)
+        self.tablaIntervalos = QTableWidget()
+        self.setup_table(self.tablaIntervalos, 15, self.data2, headers=["li", "ls", "xi", "frecuencia", "fr", "faPor", "fd", "fdPor", "dfPorXi", "d", "fPorAbsD", "fPorDD", "fPorDDD", "fPorDDDD"])
 
-        # Panel 3: Resumen
-        form_widget = QWidget()
-        form_layout = QFormLayout()
-        form_widget.setLayout(form_layout)
+        self.form_widget = QWidget()
+        self.form_layout = QFormLayout()
+        self.create_summary_form()  # Crear el formulario de resumen estadístico
+        self.form_widget.setLayout(self.form_layout)
 
-        # Panel 4: Gráfico de barras
         chart_view = self.create_bar_chart()
 
-        # Panel 1: Lector de archivos
         self.file_selector = FileSelector()
 
-        # Añadir los paneles al stack
-        self.stack.addWidget(self.file_selector)  # Panel 1: Lector de archivos
-        self.stack.addWidget(self.tablaIntervalos)        # Panel 2: Tabla
-        self.stack.addWidget(form_widget)  # Panel 3: Formulario
-        self.stack.addWidget(chart_view)   # Panel 4: Gráfico de barras
-        
-        # Conectar los botones a las funciones para cambiar de panel
+        self.stack.addWidget(self.file_selector)
+        self.stack.addWidget(self.table)
+        self.stack.addWidget(self.tablaIntervalos)
+        self.stack.addWidget(self.form_widget)
+        self.stack.addWidget(chart_view)
+
+        # Conectar los botones a los diferentes paneles
         self.buttons["Botón Lector"].clicked.connect(lambda: self.change_panel(0))
         self.buttons["Botón Tabla"].clicked.connect(lambda: self.change_panel(1))
-        self.buttons["Botón Formulario"].clicked.connect(lambda: self.change_panel(2))
-        self.buttons["Botón Gráfico"].clicked.connect(lambda: self.change_panel(3))
-        
+        self.buttons["Botón Tabla2"].clicked.connect(lambda: self.change_panel(2))
+        self.buttons["Botón Formulario"].clicked.connect(self.show_summary)
+        self.buttons["Botón Gráfico"].clicked.connect(lambda: self.change_panel(4))
 
-        # Añadir los layouts al layout principal
-        main_layout.addLayout(button_layout)  # Añadir los botones al lado izquierdo
-        main_layout.addWidget(self.stack)     # Añadir el área de visualización al lado derecho
+        main_layout.addLayout(button_layout)
+        main_layout.addWidget(self.stack)
 
-        # Configurar el layout de la ventana
         self.setLayout(main_layout)
 
-    def fill_table(self, data):
+    def setup_table(self, table, column_count, data, headers):
+        table.setRowCount(len(data['valores']))
+        table.setColumnCount(column_count)
+        table.setHorizontalHeaderLabels(headers)
+        table.verticalHeader().setVisible(False)
+        table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        
+        table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        table.setFixedHeight(400)  # Limitar la altura de la tabla
+        table.setFixedWidth(600)   # Limitar el ancho de la tabla
+        
         valores = data['valores']
-
-        for i, valor in enumerate(valores):
-            self.tablaIntervalos.setItem(i, 0, QTableWidgetItem(str(data['valores'][i])))
-            self.tablaIntervalos.setItem(i, 1, QTableWidgetItem(str(data['frecuencia_abs'][i])))
-            self.tablaIntervalos.setItem(i, 2, QTableWidgetItem(str(round(data['frecuencia_rel'][i], 2))))
-            self.tablaIntervalos.setItem(i, 3, QTableWidgetItem(str(data['frecuencia_acum'][i])))
-            self.tablaIntervalos.setItem(i, 4, QTableWidgetItem(str(round(data['frecuencia_acum_rel'][i], 2))))
-            self.tablaIntervalos.setItem(i, 5, QTableWidgetItem(str(data['frecuencia_desc'][i])))
-            self.tablaIntervalos.setItem(i, 6, QTableWidgetItem(str(round(data['frecuencia_desc_rel'][i], 2))))
-            self.tablaIntervalos.setItem(i, 7, QTableWidgetItem(str(round(data['frecuencia_abs_x'][i], 2))))
-            self.tablaIntervalos.setItem(i, 8, QTableWidgetItem(str(round(data['deltas'][i], 2))))
-            self.tablaIntervalos.setItem(i, 9, QTableWidgetItem(str(round(data['frecuencia_abs_delta_abs'][i], 2))))
-            self.tablaIntervalos.setItem(i, 10, QTableWidgetItem(str(round(data['frecuencia_abs_delta'][i], 2))))
-            self.tablaIntervalos.setItem(i, 11, QTableWidgetItem(str(round(data['frecuencia_abs_delta_cuadrado'][i], 2))))
-            self.tablaIntervalos.setItem(i, 12, QTableWidgetItem(str(round(data['frecuencia_abs_delta_cubo'][i], 2))))
-            self.tablaIntervalos.setItem(i, 13, QTableWidgetItem(str(round(data['frecuencia_abs_delta_cuarta'][i], 2))))
-
-    def change_panel(self, index):
-        # Cambiar el panel visible en el stack
-        self.stack.setCurrentIndex(index)
+        table.setItem(i, 0, QTableWidgetItem(str(data['valores'][i])))
+        table.setItem(i, 1, QTableWidgetItem(str(data['frecuencia_abs'][i])))
+        table.setItem(i, 2, QTableWidgetItem(str(round(data['frecuencia_rel'][i], 2))))
+        table.setItem(i, 3, QTableWidgetItem(str(data['frecuencia_acum'][i])))
+        table.setItem(i, 4, QTableWidgetItem(str(round(data['frecuencia_acum_rel'][i], 2))))
+        table.setItem(i, 5, QTableWidgetItem(str(data['frecuencia_desc'][i])))
+        table.setItem(i, 6, QTableWidgetItem(str(round(data['frecuencia_desc_rel'][i], 2))))
+        table.setItem(i, 7, QTableWidgetItem(str(round(data['frecuencia_abs_x'][i], 2))))
+        table.setItem(i, 8, QTableWidgetItem(str(round(data['deltas'][i], 2))))
+        table.setItem(i, 9, QTableWidgetItem(str(round(data['frecuencia_abs_delta_abs'][i], 2))))
+        table.setItem(i, 10, QTableWidgetItem(str(round(data['frecuencia_abs_delta'][i], 2))))
+        table.setItem(i, 11, QTableWidgetItem(str(round(data['frecuencia_abs_delta_cuadrado'][i], 2))))
+        table.setItem(i, 12, QTableWidgetItem(str(round(data['frecuencia_abs_delta_cubo'][i], 2))))
+        table.setItem(i, 13, QTableWidgetItem(str(round(data['frecuencia_abs_delta_cuarta'][i], 2))))
+    
 
     def create_bar_chart(self):
-         # Crear un gráfico de barras con datos de ejemplo
-        set0 = QBarSet("2023")
-        set0.append([1, 5, 3, 4, 5, 3,2, 3, 3, 4, 5, 3,5])
-
         series = QBarSeries()
-        series.append(set0)
+        bar_set = QBarSet("Datos")
+        bar_set.append([1, 2, 3, 4, 5])
+        series.append(bar_set)
 
         chart = QChart()
         chart.addSeries(series)
-        chart.setTitle("Gráfico de Barras de Ejemplo")
+        chart.setTitle("Gráfico de Barras")
         chart.setAnimationOptions(QChart.AnimationOption.SeriesAnimations)
 
-        categories = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
         axisX = QBarCategoryAxis()
-        axisX.append(categories)
+        axisX.append(["A", "B", "C", "D", "E"])
         chart.addAxis(axisX, Qt.AlignmentFlag.AlignBottom)
         series.attachAxis(axisX)
 
@@ -177,17 +156,67 @@ class MainWindow(QWidget):
         chart.addAxis(axisY, Qt.AlignmentFlag.AlignLeft)
         series.attachAxis(axisY)
 
-        chart.legend().setVisible(True)
-        chart.legend().setAlignment(Qt.AlignmentFlag.AlignBottom)
-
         chart_view = QChartView(chart)
         chart_view.setRenderHint(QPainter.RenderHint.Antialiasing)
 
         return chart_view
 
+    def create_summary_form(self):
+        # Crear etiquetas y campos para el resumen estadístico
+        self.media_label = QLabel("Media:")
+        self.media_field = QLineEdit()
+        self.media_field.setReadOnly(True)
+
+        self.mediana_label = QLabel("Mediana:")
+        self.mediana_field = QLineEdit()
+        self.mediana_field.setReadOnly(True)
+
+        self.moda_label = QLabel("Moda:")
+        self.moda_field = QLineEdit()
+        self.moda_field.setReadOnly(True)
+
+        self.varianza_label = QLabel("Varianza:")
+        self.varianza_field = QLineEdit()
+        self.varianza_field.setReadOnly(True)
+
+        self.desviacion_label = QLabel("Desviación Estándar:")
+        self.desviacion_field = QLineEdit()
+        self.desviacion_field.setReadOnly(True)
+
+        self.curtosis_label = QLabel("Curtosis:")
+        self.curtosis_field = QLineEdit()
+        self.curtosis_field.setReadOnly(True)
+
+        self.asimetria_label = QLabel("Asimetría:")
+        self.asimetria_field = QLineEdit()
+        self.asimetria_field.setReadOnly(True)
+
+        # Agregar los elementos al layout
+        self.form_layout.addRow(self.media_label, self.media_field)
+        self.form_layout.addRow(self.mediana_label, self.mediana_field)
+        self.form_layout.addRow(self.moda_label, self.moda_field)
+        self.form_layout.addRow(self.varianza_label, self.varianza_field)
+        self.form_layout.addRow(self.desviacion_label, self.desviacion_field)
+        self.form_layout.addRow(self.curtosis_label, self.curtosis_field)
+        self.form_layout.addRow(self.asimetria_label, self.asimetria_field)
+
+    def show_summary(self):
+        # Mostrar valores en el formulario de resumen
+        self.media_field.setText(f"{self.data['media']:.2f}")
+        self.mediana_field.setText(f"{self.data['mediana']:.2f}")
+        self.moda_field.setText(", ".join(map(str, self.data['moda'])))
+        self.varianza_field.setText(f"{self.data['varianza']:.2f}")
+        self.desviacion_field.setText(f"{self.data['desviacion_estandar']:.2f}")
+        self.curtosis_field.setText(f"{self.data['curtosis']:.2f}")
+        self.asimetria_field.setText(f"{self.data['asimetria']:.2f}")
+
+    def change_panel(self, index):
+        self.stack.setCurrentIndex(index)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = MainWindow()
+    window.setWindowTitle("Estadística")
+    window.setGeometry(100, 100, 800, 600)
     window.show()
     sys.exit(app.exec())

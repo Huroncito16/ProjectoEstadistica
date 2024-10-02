@@ -1,2 +1,0 @@
-# ProjectoEstadistica
-Projeto estadictica XD
