@@ -1,7 +1,5 @@
 import sys
-from PyQt6.QtWidgets import (
-    QApplication, QWidget, QStackedWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton
-)
+from PyQt6.QtWidgets import ( QApplication, QWidget, QStackedWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton )
 from PyQt6.QtGui import QIcon
 
 
@@ -74,6 +72,21 @@ class MainWindow(QWidget):
         self.close()
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class SecondWindow(QWidget):
     def __init__(self, previous_window):
         super().__init__()
@@ -85,27 +98,31 @@ class SecondWindow(QWidget):
         # Layout principal
         main_layout = QHBoxLayout()
 
-        # Layout para los botones
+        # Estos son los Layout para los botones
         Botones_layout = QVBoxLayout()
+
+        # Aquí agregas tus botones con la siguiente sintaxis
+        # "id del botón": QPushButton("el texto que aparecerá en el botón")
         self.buttons = {
             "Boton_Panel1": QPushButton("Panel 1"),
             "Boton_Panel2": QPushButton("Panel 2"),
             "Boton_Panel3": QPushButton("Panel 3"),
-            "Boton_Regresar": QPushButton("Regresar")
+            "Boton_Regresar": QPushButton("Regresar")  # Este botón es para regresar a la ventana principal
         }
 
+        # Añadir los botones al layout de botones
         for button in self.buttons.values():
             Botones_layout.addWidget(button)
 
         # Crear el QStackedWidget para cambiar entre los diferentes paneles
         self.stack = QStackedWidget()
 
-        # Crear paneles vacíos para la segunda ventana
+        # Paneles vacíos para la segunda ventana
         self.Panel1 = QLabel("Panel 1 de la segunda ventana")
         self.Panel2 = QLabel("Panel 2 de la segunda ventana")
         self.Panel3 = QLabel("Panel 3 de la segunda ventana")
 
-        # Añadir los paneles al stack
+        # Añadir los paneles al QStackedWidget
         self.stack.addWidget(self.Panel1)
         self.stack.addWidget(self.Panel2)
         self.stack.addWidget(self.Panel3)
@@ -124,9 +141,11 @@ class SecondWindow(QWidget):
         self.setLayout(main_layout)
 
     def change_panel(self, index):
+        # Cambiar entre los diferentes paneles
         self.stack.setCurrentIndex(index)
 
     def regresar(self):
+        # Cerrar la ventana actual y abrir la ventana anterior
         self.previous_window.show()
         self.close()
 
