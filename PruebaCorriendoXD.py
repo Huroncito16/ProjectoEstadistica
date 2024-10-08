@@ -99,7 +99,7 @@ class MainWindow(QWidget):
         data2 = generar_tabla_por_intervalos(datos2)
 
         main_layout = QHBoxLayout()
-
+# algo asi
         button_layout = QVBoxLayout()
         self.buttons = {
             "Botón Lector": QPushButton("Lector de Archivos"),
