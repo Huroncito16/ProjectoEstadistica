@@ -191,13 +191,11 @@ class Window1(QWidget):
         self.saved_file_path = self.file_textfield.text()
         print(f"Dirección guardada: {self.saved_file_path}")
         
-        # Solo leer los datos si la dirección es válida
         if self.saved_file_path:
             datos = leerDatos(self.saved_file_path)
             print("leido perce XD")
 
     def crear_tabla_sencilla(self):
-        # Crear el panel para la tabla sencilla
         tabla_panel = QWidget()
         tabla_layout = QVBoxLayout()
 
