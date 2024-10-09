@@ -1,6 +1,6 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QStackedWidget
-from PyQt6.QtGui import QIcon
+from PyQt6.QtGui import QIcon, QPixmap, QGuiApplication
 
 
 class MenuWindow(QWidget):
@@ -8,20 +8,23 @@ class MenuWindow(QWidget):
         super().__init__()
         self.setWindowTitle("Menú Principal")
         self.setGeometry(100, 100, 800, 400)
+        self.setMinimumSize(800, 400)
+        self.setMaximumSize(850, 450)
         self.setWindowIcon(QIcon("./img/logo.png"))
+        self.center_window()
 
-        # Layout principal
         layout = QVBoxLayout()
+        image = QLabel(self)
+        pixmap = QPixmap("./img/banner1.jpg")
+        image.setPixmap(pixmap)     
+        layout.addWidget(image)
 
-        # Botones para acceder a las otras ventanas
         self.button_window1 = QPushButton("Ir a Ventana 1")
         self.button_window2 = QPushButton("Ir a Ventana 2")
 
-        # Conectar los botones con las funciones para abrir ventanas
         self.button_window1.clicked.connect(self.open_window1)
         self.button_window2.clicked.connect(self.open_window2)
 
-        # Agregar los botones al layout
         layout.addWidget(self.button_window1)
         layout.addWidget(self.button_window2)
 
@@ -37,6 +40,26 @@ class MenuWindow(QWidget):
         self.window2.show()
         self.close()
 
+    def center_window(self):
+        screen = QGuiApplication.primaryScreen().geometry()
+        window_geometry = self.frameGeometry()
+
+        center_point = screen.center()
+        window_geometry.moveCenter(center_point)
+
+        self.move(window_geometry.topLeft())
+
+
+
+
+
+
+
+
+
+
+
+
 
 class Window1(QWidget):
     def __init__(self, previous_window):
@@ -44,7 +67,10 @@ class Window1(QWidget):
         self.previous_window = previous_window
         self.setWindowTitle("Ventana 1")
         self.setGeometry(100, 100, 800, 400)
+        self.setMaximumSize(1000, 600)
+        self.setMinimumSize(800, 400)
         self.setWindowIcon(QIcon("./img/logo.png"))
+        self.center_window()
 
         # Layout principal
         layout = QHBoxLayout()
@@ -57,7 +83,7 @@ class Window1(QWidget):
             "Boton_TablasIntervalos": QPushButton("Tablas Intervalos"),
             "Boton_ResumenEstadictico": QPushButton("Resumen Estadístico"),
             "Boton_Graficos": QPushButton("Gráficos"),
-            "Boton_Regresar": QPushButton("Regresar")  # Botón para regresar al menú
+            "Boton_Regresar": QPushButton("Regresar")
         }
 
         for button in self.buttons.values():
@@ -84,6 +110,8 @@ class Window1(QWidget):
         layout.addWidget(self.stack)
         self.setLayout(layout)
 
+    def src_Panel()
+
     def change_panel(self, index):
         self.stack.setCurrentIndex(index)
 
@@ -91,17 +119,41 @@ class Window1(QWidget):
         self.previous_window.show()
         self.close()
 
+    def center_window(self):
+        screen = QGuiApplication.primaryScreen().geometry()
+        window_geometry = self.frameGeometry()
+
+        center_point = screen.center()
+        window_geometry.moveCenter(center_point)
+
+        self.move(window_geometry.topLeft())
+
+
+
+
+
+
+
+
+
+
+
+
 
 class Window2(QWidget):
     def __init__(self, previous_window):
         super().__init__()
         self.previous_window = previous_window
         self.setWindowTitle("Ventana 2")
+        self.setMaximumSize(1000, 600)
+        self.setMinimumSize(800, 400)
         self.setGeometry(100, 100, 800, 400)
         self.setWindowIcon(QIcon("./img/logo.png"))
 
         # Layout principal
         main_layout = QHBoxLayout()
+
+        self.center_window()
 
         # Botones para los paneles de la segunda ventana
         Botones_layout = QVBoxLayout()
@@ -138,6 +190,15 @@ class Window2(QWidget):
     def regresar(self):
         self.previous_window.show()
         self.close()
+    
+    def center_window(self):
+        screen = QGuiApplication.primaryScreen().geometry()
+        window_geometry = self.frameGeometry()
+
+        center_point = screen.center()
+        window_geometry.moveCenter(center_point)
+
+        self.move(window_geometry.topLeft())
 
 
 if __name__ == "__main__":
