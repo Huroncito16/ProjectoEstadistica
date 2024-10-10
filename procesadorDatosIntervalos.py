@@ -4,12 +4,12 @@ import math
 def condicion(x, li, ls):
     return li <= x <= ls
 
-def generar_tabla_por_intervalos(datos):
-    cEnDatos = Counter(datos)
+def generar_tabla_por_intervalos(dato):
+    cEnDatos = Counter(dato)
 
-    min_val = min(datos)
-    max_val = max(datos)
-    n = len(datos)
+    min_val = min(dato)
+    max_val = max(dato)
+    n = len(dato)
     rango = max_val - min_val
     
     ni = 1 + 3.322 * math.log(n, 10)
@@ -31,7 +31,7 @@ def generar_tabla_por_intervalos(datos):
     for indice in range(canIntervalos):
         promedio = (li[indice] + ls[indice]) / 2 
         xi.append(promedio)
-        fre = [x for x in datos if condicion(x, li[indice], ls[indice])]
+        fre = [x for x in dato if condicion(x, li[indice], ls[indice])]
         freVar = len(fre)
         frecuencia.append(freVar)
         xFR = round((freVar * 100) / n, 2)
@@ -79,28 +79,28 @@ def generar_tabla_por_intervalos(datos):
     k = round(sum(fPorDDDD) / (n * (desviacionEst ** 4)), 2)
 
     return {
-        'valores': xi,
-        "li": li, 
-        "ls": ls, 
-        "xi": xi, 
-        "frecuencia": frecuencia, 
-        "fr": fr, 
-        "fa": fa, 
-        "faPor": faPor, 
-        "fd": fd, 
-        "fdPor": fdPor, 
-        "fPorXi": fPorXi, 
-        "d": d, 
-        "fPorAbsD": fPorAbsD, 
-        "fPorDD": fPorDD, 
-        "fPorDDD": fPorDDD, 
-        "fPorDDDD": fPorDDDD,
-         
-        "moda": moda, 
-        "mediana": mediana, 
-        "mediaArit": mediaArit, 
-        "desviacionMed": desviacionMed, 
-        "desviacionEst": desviacionEst, 
-        "sk": sk, 
-        "k": k
+        'valor': xi,
+        'li': li, 
+        'ls': ls, 
+        'xi': xi, 
+        'frecuencia': frecuencia, 
+        'fr': fr, 
+        'fa': fa, 
+        'faPor': faPor, 
+        'fd': fd, 
+        'fdPor': fdPor, 
+        'fPorXi': fPorXi, 
+        'd': d, 
+        'fPorAbsD': fPorAbsD, 
+        'fPorDD': fPorDD, 
+        'fPorDDD': fPorDDD, 
+        'fPorDDDD': fPorDDDD,
+
+        'moda': moda, 
+        'mediana': mediana, 
+        'mediaArit': mediaArit, 
+        'desviacionMed': desviacionMed, 
+        'desviacionEst': desviacionEst, 
+        'sk': sk, 
+        'k': k
     }

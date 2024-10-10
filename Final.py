@@ -5,6 +5,7 @@ from PyQt6.QtGui import QIcon, QPixmap, QGuiApplication
 from PyQt6.QtCore import Qt
 from readExcel import leerDatos
 from procesarDatos import listas
+from procesadorDatosIntervalos import generar_tabla_por_intervalos
 
 class FileSelector(QWidget):
     def __init__(self):
@@ -21,25 +22,6 @@ class FileSelector(QWidget):
             self.file_path = file_paths[0]
             return self.file_path
         return None
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 class MenuWindow(QWidget):
     def __init__(self):
@@ -69,9 +51,12 @@ class MenuWindow(QWidget):
         self.setLayout(layout)
 
     def open_window1(self):
-        self.window1 = Window1(self)
-        self.window1.show()
-        self.close()
+        try:
+            self.window1 = Window1(self)
+            self.window1.show()
+            self.close()
+        except Exception as e:
+            print(f"Ocurrió un error: {e}")
 
     def open_window2(self):
         self.window2 = Window2(self)
@@ -125,21 +110,21 @@ class Window1(QWidget):
         self.setWindowIcon(QIcon("./img/logo.png"))
         self.center_window()
 
-        self.saved_file_path = None  # Inicializar aquí para evitar el error
+        self.saved_file_path = None 
 
         layout = QHBoxLayout()
 
         self.file_selector = FileSelector()
 
         self.file_label = QLabel("Selecciona un archivo para leer")
-        self.file_textfield = QLineEdit()  # Campo de texto para mostrar la dirección del archivo
+        self.file_textfield = QLineEdit()
         file_dialog_panel = QWidget()
         file_dialog_layout = QVBoxLayout()
 
         file_dialog_button = QPushButton("Seleccionar Archivo")
         file_dialog_button.clicked.connect(self.open_and_display_file)
 
-        guardar_button = QPushButton("Guardar")  # Botón para guardar la dirección
+        guardar_button = QPushButton("Guardar")
         guardar_button.clicked.connect(self.guardar_direccion)
 
         file_dialog_layout.addWidget(self.file_label)
@@ -148,7 +133,6 @@ class Window1(QWidget):
         file_dialog_layout.addWidget(guardar_button)
         file_dialog_panel.setLayout(file_dialog_layout)
 
-        # Botones para los paneles en Ventana 
         Botones_layout = QVBoxLayout()
         self.buttons = {
             "Boton_LectorArchivos": QPushButton("Inicio"),
@@ -162,14 +146,12 @@ class Window1(QWidget):
         for button in self.buttons.values():
             Botones_layout.addWidget(button)
 
-        # Crear el QStackedWidget para los paneles
         self.stack = QStackedWidget()
         self.stack.addWidget(file_dialog_panel)
         self.stack.addWidget(self.crear_tabla_sencilla())
-        self.stack.addWidget(QLabel("Panel de Tablas por Intervalos"))
+        self.stack.addWidget(self.crear_Intervalos())
         self.stack.addWidget(QLabel("Panel de Resumen Estadístico"))
         self.stack.addWidget(QLabel("Panel de Gráficos"))
-
 
         self.buttons["Boton_LectorArchivos"].clicked.connect(lambda: self.change_panel(0))
         self.buttons["Boton_TablaSencillas"].clicked.connect(lambda: self.change_panel(1))
@@ -207,13 +189,15 @@ class Window1(QWidget):
         self.table_resul.verticalHeader().setVisible(False)
         self.table_widget.setColumnCount(13)
         self.table_widget.setRowCount(1)
-
-        
-
         self.table_widget.setHorizontalHeaderLabels([
             "x", "f", "fr%", "Fa", "Fa%", "Fd", "Fd%", 
             "f*x", "d", "f*|d|", "f*d^2", "f*d^3", "f*d^4"
         ])
+        
+
+        
+
+        
 
         actualizar_button = QPushButton("Actualizar Tabla")
         actualizar_button.clicked.connect(self.actualizar_tabla_sencilla)
@@ -267,7 +251,7 @@ class Window1(QWidget):
             total_delta_cuarta = sum(data['frecuencia_abs_delta_cuarta'])
 
             self.table_resul.setRowCount(1)
-            self.table_resul.setColumnCount(14)
+            self.table_resul.setColumnCount(13)
             self.table_resul.verticalHeader().hide()
             self.table_resul.horizontalHeader().hide()
             self.table_resul.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -276,11 +260,13 @@ class Window1(QWidget):
             
             self.table_resul.setFixedHeight(self.table_resul.verticalHeader().defaultSectionSize())
 
-            for col in range(14):
+            for col in range(12):
                 if col < 7:
                     self.table_resul.setColumnWidth(col, 40)
                 else:
                     self.table_resul.setColumnWidth(col, 70)
+                if col == 13:
+                    self.table_resul.setColumnWidth(col, 80)
 
             self.table_resul.setItem(0, 0, QTableWidgetItem("Totales"))
             self.table_resul.setItem(0, 1, QTableWidgetItem(str(total_f)))
@@ -295,6 +281,121 @@ class Window1(QWidget):
             self.table_resul.setItem(0, 10, QTableWidgetItem(str(round(total_delta_cuadrado, 2))))
             self.table_resul.setItem(0, 11, QTableWidgetItem(str(round(total_delta_cubo, 2))))
             self.table_resul.setItem(0, 12, QTableWidgetItem(str(round(total_delta_cuarta, 2))))
+
+    def crear_Intervalos(self):
+        intervalos = QWidget()
+        Layout_inter = QVBoxLayout()
+
+        self.table_resul_inter = QTableWidget()
+        self.table_Inter = QTableWidget()  
+       
+        self.table_Inter.verticalHeader().setVisible(False)
+        self.table_Inter.setColumnCount(14)
+        self.table_Inter.setRowCount(1)
+        self.table_Inter.setHorizontalHeaderLabels([
+            "li","ls","xi","Frecuencia","Fr","Fa","Fa%","Fd","Fd%", 
+            "f*Xi","d","f*|d|","f*d^2","f*d^3","f*d^4"
+        ])
+      
+       
+        actualizar_button = QPushButton("Actualizar Tabla")
+        actualizar_button.clicked.connect(self.actualizar_intervalo)
+        
+                
+        Layout_inter.addWidget(self.table_Inter)
+        Layout_inter.addWidget(self.table_resul_inter)
+        Layout_inter.addWidget(actualizar_button)
+        intervalos.setLayout(Layout_inter)
+
+        return intervalos
+
+    def actualizar_intervalo(self):
+        if self.saved_file_path:
+            datos = leerDatos(self.saved_file_path)
+            data = generar_tabla_por_intervalos(datos)
+            valor = data['valor']
+
+            self.table_Inter.setRowCount(len(valor))
+
+            for col in range(15):
+                if col < 7:
+                    self.table_Inter.setColumnWidth(col, 60)
+                else:
+                    self.table_Inter.setColumnWidth(col, 80)
+
+            for i, valor in enumerate(valor):
+                self.table_Inter.setItem(i, 0, QTableWidgetItem(str(data['valor'][i])))
+                self.table_Inter.setItem(i, 1, QTableWidgetItem(str(data['li'][i])))
+                self.table_Inter.setItem(i, 2, QTableWidgetItem(str(round(data['ls'][i], 2))))
+                self.table_Inter.setItem(i, 3, QTableWidgetItem(str(data['xi'][i])))
+                self.table_Inter.setItem(i, 4, QTableWidgetItem(str(round(data['frecuencia'][i], 2))))
+                self.table_Inter.setItem(i, 5, QTableWidgetItem(str(data['fr'][i])))
+                self.table_Inter.setItem(i, 6, QTableWidgetItem(str(round(data['fa'][i], 2))))
+                self.table_Inter.setItem(i, 7, QTableWidgetItem(str(round(data['faPor'][i], 2))))
+                self.table_Inter.setItem(i, 8, QTableWidgetItem(str(round(data['fd'][i], 2))))
+                self.table_Inter.setItem(i, 9, QTableWidgetItem(str(round(data['fdPor'][i], 2))))
+                self.table_Inter.setItem(i, 10, QTableWidgetItem(str(round(data['fPorXi'][i], 2))))
+                self.table_Inter.setItem(i, 11, QTableWidgetItem(str(round(data['d'][i], 2))))
+                self.table_Inter.setItem(i, 12, QTableWidgetItem(str(round(data['fPorAbsD'][i], 2))))
+                self.table_Inter.setItem(i, 13, QTableWidgetItem(str(round(data['fPorDD'][i], 2))))
+                self.table_Inter.setItem(i, 13, QTableWidgetItem(str(round(data['fPorDDD'][i], 2))))
+                self.table_Inter.setItem(i, 13, QTableWidgetItem(str(round(data['fPorDDDD'][i], 2))))
+
+                
+                total_frecuencia = sum(data['frecuencia'])
+                total_fr = sum(data['fr'])
+                total_fPorAbsD = sum(data['fPorAbsD'])
+                total_fPorDD = sum(data['fPorDD'])
+                total_fPorDDD = sum(data['fPorDDD'])
+                total_fPorDDDD = sum(data['fPorDDDD'])
+
+                self.table_resul_inter.setRowCount(1)
+                self.table_resul_inter.setColumnCount(7)
+                self.table_resul_inter.setHorizontalHeaderLabels([
+                    " ","Frecuencia","Fr","f*|d|","f*d^2","f*d^3","f*d^4"
+                ])
+                self.table_resul_inter.verticalHeader().hide()
+                self.table_resul_inter.horizontalHeader().show()
+                self.table_resul_inter.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+
+                self.table_resul_inter.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+                self.table_resul_inter.setMaximumSize(800, 70)
+                
+
+                for col in range(7):
+                    self.table_resul_inter.setColumnWidth(col, 80)
+                                                                    
+                self.table_resul_inter.setItem(0, 0, QTableWidgetItem("Totales"))
+                self.table_resul_inter.setItem(0, 1, QTableWidgetItem(str(total_frecuencia)))
+                self.table_resul_inter.setItem(0, 2, QTableWidgetItem(str(total_fr)))
+                self.table_resul_inter.setItem(0, 3, QTableWidgetItem(str(total_fPorAbsD)))
+                self.table_resul_inter.setItem(0, 4, QTableWidgetItem(str(total_fPorDD)))
+                self.table_resul_inter.setItem(0, 5, QTableWidgetItem(str(total_fPorDDD)))
+                self.table_resul_inter.setItem(0, 6, QTableWidgetItem(str(total_fPorDDDD)))
+                
+
+        
+        
+    
+    
+
+        
+        
+
+    
+        
+     
+
+
+
+
+
+
+
+
+
+
+
 
 
     def change_panel(self, index):
