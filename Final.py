@@ -1,7 +1,8 @@
 from datetime import date
 import sys
-from PyQt6.QtWidgets import QTableWidget, QTableWidgetItem, QLineEdit, QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFileDialog, QStackedWidget
+from PyQt6.QtWidgets import QScrollArea, QSizePolicy, QTableWidget, QTableWidgetItem, QLineEdit, QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFileDialog, QStackedWidget
 from PyQt6.QtGui import QIcon, QPixmap, QGuiApplication
+from PyQt6.QtCore import Qt
 from readExcel import leerDatos
 from procesarDatos import listas
 
@@ -119,8 +120,8 @@ class Window1(QWidget):
         self.previous_window = previous_window
         self.setWindowTitle("Ventana 1")
         self.setGeometry(100, 100, 800, 500)
-        self.setMaximumSize(1000, 500)
-        self.setMinimumSize(800, 500)
+        self.setMaximumSize(900, 600)
+        self.setMinimumSize(900, 600)
         self.setWindowIcon(QIcon("./img/logo.png"))
         self.center_window()
 
@@ -200,6 +201,10 @@ class Window1(QWidget):
         tabla_layout = QVBoxLayout()
 
         self.table_widget = QTableWidget()  
+        self.table_resul = QTableWidget() 
+
+        self.table_widget.verticalHeader().setVisible(False)
+        self.table_resul.verticalHeader().setVisible(False)
         self.table_widget.setColumnCount(13)
         self.table_widget.setRowCount(1)
 
@@ -217,6 +222,7 @@ class Window1(QWidget):
         tabla_layout.addWidget(self.totales_label)
         
         tabla_layout.addWidget(self.table_widget)
+        tabla_layout.addWidget(self.table_resul)
         tabla_layout.addWidget(actualizar_button)
         tabla_panel.setLayout(tabla_layout)
 
@@ -230,20 +236,11 @@ class Window1(QWidget):
 
             self.table_widget.setRowCount(len(valores))
 
-            self.table_widget.setColumnWidth(0, 20)
-            self.table_widget.setColumnWidth(1, 20)
-            self.table_widget.setColumnWidth(2, 20)
-            self.table_widget.setColumnWidth(3, 20)
-            self.table_widget.setColumnWidth(4, 20)
-            self.table_widget.setColumnWidth(5, 20)
-            self.table_widget.setColumnWidth(6, 20)
-            self.table_widget.setColumnWidth(7, 30)
-            self.table_widget.setColumnWidth(8, 30)
-            self.table_widget.setColumnWidth(9, 40)
-            self.table_widget.setColumnWidth(10, 60)
-            self.table_widget.setColumnWidth(11, 60)
-            self.table_widget.setColumnWidth(12, 70)
-            self.table_widget.setColumnWidth(13, 70)
+            for col in range(14):
+                if col < 7:
+                    self.table_widget.setColumnWidth(col, 40)
+                else:
+                    self.table_widget.setColumnWidth(col, 70)
 
             for i, valor in enumerate(valores):
                 self.table_widget.setItem(i, 0, QTableWidgetItem(str(data['valores'][i])))
@@ -261,7 +258,6 @@ class Window1(QWidget):
                 self.table_widget.setItem(i, 12, QTableWidgetItem(str(round(data['frecuencia_abs_delta_cubo'][i], 2))))
                 self.table_widget.setItem(i, 13, QTableWidgetItem(str(round(data['frecuencia_abs_delta_cuarta'][i], 2))))
 
-            # Calcular los totales
             total_f = sum(data['frecuencia_abs'])
             total_f_rel = sum(data['frecuencia_rel'])
             total_abs_delta = sum(data['frecuencia_abs_delta_abs'])
@@ -270,12 +266,35 @@ class Window1(QWidget):
             total_delta_cubo = sum(data['frecuencia_abs_delta_cubo'])
             total_delta_cuarta = sum(data['frecuencia_abs_delta_cuarta'])
 
-            # Mostrar los totales en el QLabel
-            self.totales_label.setText(
-                f"Total: {total_f}   f_rel:  {total_f_rel},      abs_delta={total_abs_delta}, "
-                f"delta={total_delta}, delta_cuadrado={total_delta_cuadrado}, "
-                f"delta_cubo={total_delta_cubo}, delta_cuarta={total_delta_cuarta}"
-            )
+            self.table_resul.setRowCount(1)
+            self.table_resul.setColumnCount(14)
+            self.table_resul.verticalHeader().hide()
+            self.table_resul.horizontalHeader().hide()
+            self.table_resul.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+            self.table_resul.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+
+            
+            self.table_resul.setFixedHeight(self.table_resul.verticalHeader().defaultSectionSize())
+
+            for col in range(14):
+                if col < 7:
+                    self.table_resul.setColumnWidth(col, 40)
+                else:
+                    self.table_resul.setColumnWidth(col, 70)
+
+            self.table_resul.setItem(0, 0, QTableWidgetItem("Totales"))
+            self.table_resul.setItem(0, 1, QTableWidgetItem(str(total_f)))
+            self.table_resul.setItem(0, 2, QTableWidgetItem(str(round(total_f_rel, 2))))
+            self.table_resul.setItem(0, 3, QTableWidgetItem(" "))
+            self.table_resul.setItem(0, 4, QTableWidgetItem(" "))
+            self.table_resul.setItem(0, 5, QTableWidgetItem(" "))
+            self.table_resul.setItem(0, 6, QTableWidgetItem(" "))
+            self.table_resul.setItem(0, 7, QTableWidgetItem(" "))
+            self.table_resul.setItem(0, 8, QTableWidgetItem(str(round(total_delta, 2))))
+            self.table_resul.setItem(0, 9, QTableWidgetItem(str(round(total_abs_delta, 2))))
+            self.table_resul.setItem(0, 10, QTableWidgetItem(str(round(total_delta_cuadrado, 2))))
+            self.table_resul.setItem(0, 11, QTableWidgetItem(str(round(total_delta_cubo, 2))))
+            self.table_resul.setItem(0, 12, QTableWidgetItem(str(round(total_delta_cuarta, 2))))
 
 
     def change_panel(self, index):
