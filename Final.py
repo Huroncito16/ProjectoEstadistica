@@ -1,7 +1,8 @@
 from datetime import date
 import sys
 from PyQt6.QtWidgets import QScrollArea, QSizePolicy, QTableWidget, QTableWidgetItem, QLineEdit, QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFileDialog, QStackedWidget
-from PyQt6.QtGui import QIcon, QPixmap, QGuiApplication
+from PyQt6.QtCharts import QLineSeries, QChart, QChartView, QBarSeries, QBarSet, QBarCategoryAxis, QValueAxis
+from PyQt6.QtGui import QPainter, QIcon, QPixmap, QGuiApplication
 from PyQt6.QtCore import Qt
 from readExcel import leerDatos
 from procesarDatos import listas
@@ -39,8 +40,8 @@ class MenuWindow(QWidget):
         image.setPixmap(pixmap)     
         layout.addWidget(image)
 
-        self.button_window1 = QPushButton("Ir a Ventana 1")
-        self.button_window2 = QPushButton("Ir a Ventana 2")
+        self.button_window1 = QPushButton("Analisis Estadisticos")
+        self.button_window2 = QPushButton("Combinaciones y Distrubuciones")
 
         self.button_window1.clicked.connect(self.open_window1)
         self.button_window2.clicked.connect(self.open_window2)
@@ -59,9 +60,12 @@ class MenuWindow(QWidget):
             print(f"Ocurrió un error: {e}")
 
     def open_window2(self):
-        self.window2 = Window2(self)
-        self.window2.show()
-        self.close()
+        try:
+            self.window2 = Window2(self)
+            self.window2.show()
+            self.close()
+        except Exception as e:
+            print(f"Ocurrió un error: {e}")
 
     def center_window(self):
         screen = QGuiApplication.primaryScreen().geometry()
@@ -71,29 +75,6 @@ class MenuWindow(QWidget):
         window_geometry.moveCenter(center_point)
 
         self.move(window_geometry.topLeft())
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -151,7 +132,7 @@ class Window1(QWidget):
         self.stack.addWidget(self.crear_tabla_sencilla())
         self.stack.addWidget(self.crear_Intervalos())
         self.stack.addWidget(self.Resumen())
-        self.stack.addWidget(QLabel("Panel de Gráficos"))
+        self.stack.addWidget(self.crear_Grafico())
 
         self.buttons["Boton_LectorArchivos"].clicked.connect(lambda: self.change_panel(0))
         self.buttons["Boton_TablaSencillas"].clicked.connect(lambda: self.change_panel(1))
@@ -455,8 +436,119 @@ class Window1(QWidget):
             for i, new_value in enumerate(nuevos_valores):
                 self.text_fields[i].setText(str(new_value))
         
-    
+    def crear_Grafico(self):
+        rango = 0
+        media = 1200
+        mediana = 800
+        moda = 600
+        varianza = 500
+        desviacion_estandar = 1300
+        curtosis = 900
+        asimetria = 700
+        error_tipico = 400
+        cuenta = 1000
+
+        panel = QWidget()
+        layout = QVBoxLayout()
+
+        self.series = QBarSeries()
+        self.bar_set = QBarSet("Pato")
         
+        self.bar_set.append([rango, media, mediana, moda, varianza, 
+                            desviacion_estandar, curtosis, asimetria, 
+                            error_tipico, cuenta])
+        
+        self.series.append(self.bar_set)
+
+        chart = QChart()
+        chart.addSeries(self.series)
+        chart.setTitle("Gráfico de Barras con Línea Conectada")
+        chart.setAnimationOptions(QChart.AnimationOption.SeriesAnimations)
+
+        axisX = QBarCategoryAxis()
+        axisX.append(["Rango", "Media", "Mediana", "Moda", "Varianza",
+                    "Desviación Est.", "Curtosis", "Asimetría", 
+                    "Error Típico", "Cuenta"])
+        chart.addAxis(axisX, Qt.AlignmentFlag.AlignBottom)
+        self.series.attachAxis(axisX)
+
+        axisY = QValueAxis()
+        axisY.setRange(0, 1600)
+        chart.addAxis(axisY, Qt.AlignmentFlag.AlignLeft)
+        self.series.attachAxis(axisY)
+
+        self.line_series = QLineSeries()
+        
+        self.line_series.append(0, rango)
+        self.line_series.append(1, media)
+        self.line_series.append(2, mediana)
+        self.line_series.append(3, moda)
+        self.line_series.append(4, varianza)
+        self.line_series.append(5, desviacion_estandar)
+        self.line_series.append(6, curtosis)
+        self.line_series.append(7, asimetria)
+        self.line_series.append(8, error_tipico)
+        self.line_series.append(9, cuenta)
+
+        chart.addSeries(self.line_series)
+
+        self.line_series.attachAxis(axisX)
+        self.line_series.attachAxis(axisY)
+
+        chart_view = QChartView(chart)
+        chart_view.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        actualizar_btn = QPushButton("Actualizar Tabla")
+        actualizar_btn.clicked.connect(self.actualizar_Grafica)
+
+        layout.addWidget(chart_view)
+        layout.addWidget(actualizar_btn)
+        panel.setLayout(layout)
+
+        return panel
+        
+        
+
+    def actualizar_Grafica(self):
+        if self.saved_file_path:
+            datos = leerDatos(self.saved_file_path)
+            dat = listas(datos)
+
+            # Obtener los valores actualizados
+            rango = dat.get('rango', 0)
+            media = dat.get('media', 0)
+            mediana = dat.get('mediana', 0)
+            moda = dat.get('moda', [0])
+            if isinstance(moda, list):
+                moda = moda[0]
+            varianza = dat.get('varianza', 0)
+            desviacion_estandar = dat.get('desviacion_estandar', 0)
+            curtosis = dat.get('curtosis', 0)
+            asimetria = dat.get('asimetria', 0)
+            error_tipico = dat.get('error_tipico', 0)
+            cuenta = dat.get('cuenta', 0)
+
+            # Lista de nuevos valores
+            nuevos_valores = [rango, media, mediana, moda, varianza,
+                            desviacion_estandar, curtosis, asimetria,
+                            error_tipico, cuenta]
+
+            # Actualizar los valores de las barras
+            for index, valor in enumerate(nuevos_valores):
+                if isinstance(valor, (int, float)):
+                    self.bar_set.replace(index, valor)
+                else:
+                    print(f"Advertencia: Valor no numérico en la posición {index}: {valor}")
+
+            # Actualizar los puntos de la línea
+            self.line_series.clear()  # Limpiar los puntos actuales de la serie de líneas
+            for index, valor in enumerate(nuevos_valores):
+                if isinstance(valor, (int, float)):
+                    self.line_series.append(index, valor)  # Agregar el nuevo punto a la línea
+
+            # Forzar la actualización del gráfico
+            self.series.chart().update()
+            
     
     
 
