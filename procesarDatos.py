@@ -1,7 +1,7 @@
 from collections import Counter
 import math
 import numpy as np
-from scipy.stats import kurtosis, skew
+from scipy.stats import kurtosis, skew, sem
 
 def listas(datos):
     frecuencias = Counter(datos)
@@ -63,7 +63,7 @@ def listas(datos):
     total_delta_cubo = sum(frecuencia_abs_delta_cubo)
     total_delta_cuarta = sum(frecuencia_abs_delta_cuarta)
 
-    # Cálculo de los parámetros adicionales
+    
     valores_np = np.array(datos)
     valor_minimo = np.min(valores_np)
     valor_maximo = np.max(valores_np)
@@ -75,6 +75,9 @@ def listas(datos):
     desviacion_estandar = np.std(valores_np, ddof=0)
     curtosis = kurtosis(valores_np, fisher=True)
     asimetria = skew(valores_np, bias=False)
+    error_tipico = sem(valores_np)
+    suma = np.sum(valores_np)
+    cuenta = len(valores_np)
 
     return {
         'valores': valores,
@@ -98,6 +101,7 @@ def listas(datos):
         'total_delta_cuadrado': total_delta_cuadrado,
         'total_delta_cubo': total_delta_cubo,
         'total_delta_cuarta': total_delta_cuarta,
+
         'valor_minimo': valor_minimo,
         'valor_maximo': valor_maximo,
         'rango': rango,
@@ -107,5 +111,8 @@ def listas(datos):
         'varianza': varianza,
         'desviacion_estandar': desviacion_estandar,
         'curtosis': curtosis,
-        'asimetria': asimetria
+        'asimetria': asimetria,
+        'error_tipico': error_tipico,
+        'suma': suma,
+        'cuenta': cuenta
     }

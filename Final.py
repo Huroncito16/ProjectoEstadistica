@@ -150,7 +150,7 @@ class Window1(QWidget):
         self.stack.addWidget(file_dialog_panel)
         self.stack.addWidget(self.crear_tabla_sencilla())
         self.stack.addWidget(self.crear_Intervalos())
-        self.stack.addWidget(QLabel("Panel de Resumen Estadístico"))
+        self.stack.addWidget(self.Resumen())
         self.stack.addWidget(QLabel("Panel de Gráficos"))
 
         self.buttons["Boton_LectorArchivos"].clicked.connect(lambda: self.change_panel(0))
@@ -194,17 +194,9 @@ class Window1(QWidget):
             "f*x", "d", "f*|d|", "f*d^2", "f*d^3", "f*d^4"
         ])
         
-
-        
-
-        
-
         actualizar_button = QPushButton("Actualizar Tabla")
         actualizar_button.clicked.connect(self.actualizar_tabla_sencilla)
-        
-        self.totales_label = QLabel("Totales: ") 
-        tabla_layout.addWidget(self.totales_label)
-        
+             
         tabla_layout.addWidget(self.table_widget)
         tabla_layout.addWidget(self.table_resul)
         tabla_layout.addWidget(actualizar_button)
@@ -373,8 +365,97 @@ class Window1(QWidget):
                 self.table_resul_inter.setItem(0, 5, QTableWidgetItem(str(total_fPorDDD)))
                 self.table_resul_inter.setItem(0, 6, QTableWidgetItem(str(total_fPorDDDD)))
                 
+    def Resumen(self):
+        panel_resul = QWidget()
+        layout = QVBoxLayout()
+        layout_Horizontal = QHBoxLayout()
+        panel_label_1 = QVBoxLayout()
+        panel_label = QVBoxLayout()
 
+        img = QVBoxLayout()
+        image = QLabel(self)
+        pixmap = QPixmap("./img/Banner_resumen.jpg")
+        image.setPixmap(pixmap)
+        img.addWidget(image)
+
+        if self.saved_file_path:
+            datos = leerDatos(self.saved_file_path)
+            resultados = listas(datos)
+        else:
+            resultados = {
+                'valor_minimo': 0,
+                'valor_maximo': 0,
+                'rango': 0,
+                'media': 0,
+                'mediana': 0,
+                'moda': 0,
+                'varianza': 0,
+                'desviacion_estandar': 0,
+                'curtosis': 0,
+                'asimetria': 0,
+                'error_tipico': 0,
+                'suma': 0,
+                'cuenta': 0
+            }
+
+        self.field_data = [
+            ("Valor mínimo:", resultados['valor_minimo']),
+            ("Valor máximo:", resultados['valor_maximo']),
+            ("Rango:", resultados['rango']),
+            ("Media:", resultados['media']),
+            ("Mediana:", resultados['mediana']),
+            ("Moda:", resultados['moda']),
+            ("Varianza:", resultados['varianza']),
+            ("Desviación estándar:", resultados['desviacion_estandar']),
+            ("Curtosis:", resultados['curtosis']),
+            ("Asimetría:", resultados['asimetria']),
+            ("Error típico:", resultados['error_tipico']),
+            ("Suma:", resultados['suma']),
+            ("Cuenta:", resultados['cuenta'])
+        ]
+
+        self.text_fields = []
+
+        for label_text, _ in self.field_data:
+            label = QLabel(label_text)
+            panel_label_1.addWidget(label)
+
+        for _, field_value in self.field_data:
+            text_field = QLineEdit()
+            text_field.setText(str(field_value))
+            self.text_fields.append(text_field)
+            panel_label.addWidget(text_field)
+
+        self.update_button = QPushButton("Actualizar")
+        self.update_button.clicked.connect(lambda: self.actualizar_valores())
+
+        layout_Horizontal.addLayout(panel_label_1)
+        layout_Horizontal.addLayout(panel_label)
+
+        layout.addLayout(img)
+        layout.addLayout(layout_Horizontal)
+        layout.addWidget(self.update_button)
+
+        panel_resul.setLayout(layout)
+
+        return panel_resul
+
+    def actualizar_valores(self):
+        if self.saved_file_path:
+            datos = leerDatos(self.saved_file_path)
+            resultados = listas(datos)
+            
+            nuevos_valores = [
+                resultados['valor_minimo'], resultados['valor_maximo'], resultados['rango'], 
+                resultados['media'], resultados['mediana'], resultados['moda'], resultados['varianza'], 
+                resultados['desviacion_estandar'], resultados['curtosis'], resultados['asimetria'], 
+                resultados['error_tipico'], resultados['suma'], resultados['cuenta']
+            ]
+            
+            for i, new_value in enumerate(nuevos_valores):
+                self.text_fields[i].setText(str(new_value))
         
+    
         
     
     
