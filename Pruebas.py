@@ -1,11 +1,6 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QLineEdit, QPushButton, QComboBox
-from PyQt6.QtCore import Qt
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
 from math import factorial as fac
-import networkx as nx
-import matplotlib.patches as patches
 
 # Funciones de combinaciones y permutaciones
 def combSinRep(n, r):
@@ -26,58 +21,6 @@ def perSinRepAll(n):
 def perCir(n):
     return fac(n - 1)
 
-# Clase para crear una gráfica de árbol de combinaciones
-class Grafica(FigureCanvas):
-    def __init__(self, parent=None):
-        fig, self.ax = Figure(figsize=(5, 4), dpi=100), None
-        super().__init__(fig)
-        self.setParent(parent)
-        self.ax = fig.add_subplot(111)
-        self.ax.set_title('Árbol de Combinaciones')
-
-    def plot_tree(self, n, r):
-        self.ax.clear()
-        self.ax.set_title('Árbol de Combinaciones')
-
-        # Crear el grafo con NetworkX
-        G = nx.DiGraph()
-
-        # Nodo raíz (inicial)
-        root = f"Combinación (n={n}, r={r})"
-        G.add_node(root)
-
-        # Añadir nodos y conexiones (nodos hijos)
-        for i in range(n):
-            parent = f"C{i+1}"
-            G.add_node(parent)
-            G.add_edge(root, parent)
-
-            # Añadir ramas adicionales
-            for j in range(r):
-                child = f"C{i+1},R{j+1}"
-                G.add_node(child)
-                G.add_edge(parent, child)
-
-        # Generar el layout para el árbol
-        pos = nx.spring_layout(G, seed=42)
-
-        # Dibujar nodos y bordes
-        nx.draw(G, pos, with_labels=True, ax=self.ax, node_size=2000, node_color="lightblue", font_size=10)
-
-        # Dibujar nodos personalizados (óvalo y rectángulos)
-        for node, (x, y) in pos.items():
-            if node == root:
-                # Nodo raíz como óvalo
-                oval = patches.Ellipse((x, y), 0.2, 0.1, edgecolor='black', facecolor='none', lw=2)
-                self.ax.add_patch(oval)
-            else:
-                # Otros nodos como rectángulos
-                rect = patches.Rectangle((x-0.05, y-0.025), 0.1, 0.05, edgecolor='black', facecolor='none', lw=2)
-                self.ax.add_patch(rect)
-
-        # Refrescar el canvas
-        self.ax.figure.canvas.draw()
-
 # Aplicación PyQt6
 class CombPermApp(QWidget):
     def __init__(self):
@@ -87,7 +30,7 @@ class CombPermApp(QWidget):
     def initUI(self):
         # Configuración de la ventana
         self.setWindowTitle("Cálculo de Combinaciones y Permutaciones")
-        self.setGeometry(100, 100, 600, 500)
+        self.setGeometry(100, 100, 400, 200)
 
         # Layout principal
         layout = QVBoxLayout()
@@ -116,9 +59,6 @@ class CombPermApp(QWidget):
         # Label para mostrar el resultado
         self.resultado = QLabel("Resultado: ")
 
-        # Widget de la gráfica en forma de árbol
-        self.grafica = Grafica(self)
-
         # Añadir widgets al layout
         layout.addWidget(self.combo)
         layout.addWidget(self.label_n)
@@ -127,7 +67,6 @@ class CombPermApp(QWidget):
         layout.addWidget(self.input_r)
         layout.addWidget(self.btn_calcular)
         layout.addWidget(self.resultado)
-        layout.addWidget(self.grafica)
 
         # Establecer el layout
         self.setLayout(layout)
@@ -153,14 +92,9 @@ class CombPermApp(QWidget):
                 res = perCir(n)
 
             # Mostrar el resultado
-            self.resultado.setText(f"Resultado: {res:.2f}")
-
-            # Generar el árbol de combinaciones
-            self.grafica.plot_tree(n, r)
+            self.resultado.setText(f"Resultado: {res}")
         except ValueError:
             self.resultado.setText("Por favor, ingresa valores válidos para n y r.")
-        except ZeroDivisionError:
-            self.resultado.setText("Error: No se puede dividir por cero.")
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
