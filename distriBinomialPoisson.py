@@ -1,4 +1,4 @@
-import analiComb as comb
+import analiCombi as comb
 import math
 def distriBinomial(num_exitos, ensayos, prob_exito, acumulado):
     combinat = comb.combSinRep(ensayos, num_exitos)
@@ -25,6 +25,6 @@ def distriPoison(x,media,acumulado):
 if __name__ == "__main__":
     n = 5
     disB = distriPoison(4,7,True)
-    disB = round(disB * 100,2);
+    disB = round(disB * 100,2)
   
     print(disB)

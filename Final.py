@@ -14,7 +14,6 @@ class FileSelector(QWidget):
         self.file_path = None
 
     def open_file_dialog(self):
-        # Abrir diálogo de archivos solo para archivos Excel (.xlsx, .xls)
         file_dialog = QFileDialog(self)
         file_dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
         file_dialog.setNameFilter("Archivos Excel (*.xlsx *.xls)")
@@ -36,18 +35,21 @@ class MenuWindow(QWidget):
 
         layout = QVBoxLayout()
         image = QLabel(self)
-        pixmap = QPixmap("./img/banner1.jpg")
+        pixmap = QPixmap("./img/banner3.jpg")
         image.setPixmap(pixmap)     
         layout.addWidget(image)
 
         self.button_window1 = QPushButton("Analisis Estadisticos")
         self.button_window2 = QPushButton("Combinaciones y Distrubuciones")
+        self.button_cerrar = QPushButton("salir")
 
         self.button_window1.clicked.connect(self.open_window1)
         self.button_window2.clicked.connect(self.open_window2)
+        self.button_cerrar.clicked.connect(self.close)
 
         layout.addWidget(self.button_window1)
         layout.addWidget(self.button_window2)
+        layout.addWidget(self.button_cerrar)
 
         self.setLayout(layout)
 
@@ -67,6 +69,9 @@ class MenuWindow(QWidget):
         except Exception as e:
             print(f"Ocurrió un error: {e}")
 
+    def close(self):
+        return super().close()
+
     def center_window(self):
         screen = QGuiApplication.primaryScreen().geometry()
         window_geometry = self.frameGeometry()
@@ -76,10 +81,7 @@ class MenuWindow(QWidget):
 
         self.move(window_geometry.topLeft())
 
-
-
-
-
+ 
 class Window1(QWidget):
     def __init__(self, previous_window):
         super().__init__()
@@ -97,10 +99,17 @@ class Window1(QWidget):
 
         self.file_selector = FileSelector()
 
-        self.file_label = QLabel("Selecciona un archivo para leer")
+       
         self.file_textfield = QLineEdit()
         file_dialog_panel = QWidget()
         file_dialog_layout = QVBoxLayout()
+
+        img = QHBoxLayout()
+        image = QLabel(self)
+        pixmap = QPixmap("./img/banner_Open_Dialogo.jpg")
+        image.setPixmap(pixmap)
+        image.setMaximumSize(800,400)
+        img.addWidget(image)
 
         file_dialog_button = QPushButton("Seleccionar Archivo")
         file_dialog_button.clicked.connect(self.open_and_display_file)
@@ -108,7 +117,7 @@ class Window1(QWidget):
         guardar_button = QPushButton("Guardar")
         guardar_button.clicked.connect(self.guardar_direccion)
 
-        file_dialog_layout.addWidget(self.file_label)
+        file_dialog_layout.addWidget(image)
         file_dialog_layout.addWidget(self.file_textfield)
         file_dialog_layout.addWidget(file_dialog_button)
         file_dialog_layout.addWidget(guardar_button)
@@ -355,7 +364,7 @@ class Window1(QWidget):
 
         img = QVBoxLayout()
         image = QLabel(self)
-        pixmap = QPixmap("./img/Banner_resumen.jpg")
+        pixmap = QPixmap("./img/banner_delgado.jpg")
         image.setPixmap(pixmap)
         img.addWidget(image)
 
@@ -506,15 +515,12 @@ class Window1(QWidget):
         panel.setLayout(layout)
 
         return panel
-        
-        
-
+       
     def actualizar_Grafica(self):
         if self.saved_file_path:
             datos = leerDatos(self.saved_file_path)
             dat = listas(datos)
 
-            # Obtener los valores actualizados
             rango = dat.get('rango', 0)
             media = dat.get('media', 0)
             mediana = dat.get('mediana', 0)
@@ -528,49 +534,23 @@ class Window1(QWidget):
             error_tipico = dat.get('error_tipico', 0)
             cuenta = dat.get('cuenta', 0)
 
-            # Lista de nuevos valores
             nuevos_valores = [rango, media, mediana, moda, varianza,
                             desviacion_estandar, curtosis, asimetria,
                             error_tipico, cuenta]
 
-            # Actualizar los valores de las barras
             for index, valor in enumerate(nuevos_valores):
                 if isinstance(valor, (int, float)):
                     self.bar_set.replace(index, valor)
                 else:
                     print(f"Advertencia: Valor no numérico en la posición {index}: {valor}")
 
-            # Actualizar los puntos de la línea
-            self.line_series.clear()  # Limpiar los puntos actuales de la serie de líneas
+            self.line_series.clear()
             for index, valor in enumerate(nuevos_valores):
                 if isinstance(valor, (int, float)):
-                    self.line_series.append(index, valor)  # Agregar el nuevo punto a la línea
+                    self.line_series.append(index, valor)
 
-            # Forzar la actualización del gráfico
             self.series.chart().update()
-            
-    
-    
-
-        
-        
-
-    
-        
-     
-
-
-
-
-
-
-
-
-
-
-
-
-
+         
     def change_panel(self, index):
         self.stack.setCurrentIndex(index)
 
@@ -654,7 +634,8 @@ class Window2(QWidget):
             "Boton_Panel1": QPushButton("Panel 1"),
             "Boton_Panel2": QPushButton("Panel 2"),
             "Boton_Panel3": QPushButton("Panel 3"),
-            "Boton_Regresar": QPushButton("Regresar")  # Botón para regresar al menú
+            "Boton_Panel4": QPushButton("Panel 4"),
+            "Boton_Regresar": QPushButton("Regresar")
         }
 
         for button in self.buttons.values():
@@ -665,17 +646,22 @@ class Window2(QWidget):
         self.stack.addWidget(QLabel("Panel 1 de la segunda ventana"))
         self.stack.addWidget(QLabel("Panel 2 de la segunda ventana"))
         self.stack.addWidget(QLabel("Panel 3 de la segunda ventana"))
+        self.stack.addWidget(QLabel("Panel 4 de la segunda ventana"))
 
         # Conectar los botones para cambiar entre paneles
         self.buttons["Boton_Panel1"].clicked.connect(lambda: self.change_panel(0))
         self.buttons["Boton_Panel2"].clicked.connect(lambda: self.change_panel(1))
         self.buttons["Boton_Panel3"].clicked.connect(lambda: self.change_panel(2))
+        self.buttons["Boton_Panel4"].clicked.connect(lambda: self.change_panel(3))
         self.buttons["Boton_Regresar"].clicked.connect(self.regresar)
 
         # Agregar los layouts
         main_layout.addLayout(Botones_layout)
         main_layout.addWidget(self.stack)
         self.setLayout(main_layout)
+
+    
+
         
     def change_panel(self, index):
         self.stack.setCurrentIndex(index)
