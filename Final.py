@@ -1,12 +1,13 @@
 from datetime import date
 import sys
-from PyQt6.QtWidgets import QScrollArea, QSizePolicy, QTableWidget, QTableWidgetItem, QLineEdit, QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFileDialog, QStackedWidget
+from PyQt6.QtWidgets import QComboBox, QScrollArea, QSizePolicy, QTableWidget, QTableWidgetItem, QLineEdit, QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFileDialog, QStackedWidget
 from PyQt6.QtCharts import QLineSeries, QChart, QChartView, QBarSeries, QBarSet, QBarCategoryAxis, QValueAxis
 from PyQt6.QtGui import QPainter, QIcon, QPixmap, QGuiApplication
 from PyQt6.QtCore import Qt
 from readExcel import leerDatos
 from procesarDatos import listas
 from procesadorDatosIntervalos import generar_tabla_por_intervalos
+from distriBinomialPoisson import distriBinomial, distriPoison
 
 class FileSelector(QWidget):
     def __init__(self):
@@ -62,12 +63,12 @@ class MenuWindow(QWidget):
             print(f"Ocurrió un error: {e}")
 
     def open_window2(self):
-        try:
+        #try:
             self.window2 = Window2(self)
             self.window2.show()
             self.close()
-        except Exception as e:
-            print(f"Ocurrió un error: {e}")
+        #except Exception as e:
+        #    print(f"Ocurrió un error: {e}")
 
     def close(self):
         return super().close()
@@ -80,7 +81,6 @@ class MenuWindow(QWidget):
         window_geometry.moveCenter(center_point)
 
         self.move(window_geometry.topLeft())
-
  
 class Window1(QWidget):
     def __init__(self, previous_window):
@@ -567,52 +567,6 @@ class Window1(QWidget):
 
         self.move(window_geometry.topLeft())
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class Window2(QWidget):
     def __init__(self, previous_window):
         super().__init__()
@@ -623,46 +577,205 @@ class Window2(QWidget):
         self.setGeometry(100, 100, 800, 400)
         self.setWindowIcon(QIcon("./img/logo.png"))
 
-        # Layout principal
         main_layout = QHBoxLayout()
 
         self.center_window()
 
-        # Botones para los paneles de la segunda ventana
         Botones_layout = QVBoxLayout()
         self.buttons = {
             "Boton_Panel1": QPushButton("Panel 1"),
             "Boton_Panel2": QPushButton("Panel 2"),
-            "Boton_Panel3": QPushButton("Panel 3"),
-            "Boton_Panel4": QPushButton("Panel 4"),
+            "Boton_Panel3": QPushButton("Binomial"),
+            "Boton_Panel4": QPushButton("Poisson"),
             "Boton_Regresar": QPushButton("Regresar")
         }
 
         for button in self.buttons.values():
             Botones_layout.addWidget(button)
 
-        # Crear el QStackedWidget para los paneles de la segunda ventana
         self.stack = QStackedWidget()
         self.stack.addWidget(QLabel("Panel 1 de la segunda ventana"))
-        self.stack.addWidget(QLabel("Panel 2 de la segunda ventana"))
-        self.stack.addWidget(QLabel("Panel 3 de la segunda ventana"))
-        self.stack.addWidget(QLabel("Panel 4 de la segunda ventana"))
+        self.stack.addWidget(QLabel("panel 2 XD"))
+        self.stack.addWidget(self.binomial())
+        self.stack.addWidget(self.poisson())
 
-        # Conectar los botones para cambiar entre paneles
         self.buttons["Boton_Panel1"].clicked.connect(lambda: self.change_panel(0))
         self.buttons["Boton_Panel2"].clicked.connect(lambda: self.change_panel(1))
         self.buttons["Boton_Panel3"].clicked.connect(lambda: self.change_panel(2))
         self.buttons["Boton_Panel4"].clicked.connect(lambda: self.change_panel(3))
         self.buttons["Boton_Regresar"].clicked.connect(self.regresar)
 
-        # Agregar los layouts
         main_layout.addLayout(Botones_layout)
         main_layout.addWidget(self.stack)
         self.setLayout(main_layout)
 
-    
+    def poisson(self):
+        panel = QWidget()
+        layout = QVBoxLayout()
+        layoutH = QHBoxLayout()
+        label_layout = QVBoxLayout()
+        textfiel_layout = QVBoxLayout()
+        combo = QHBoxLayout()
 
+        x = 0
+        media = 0
+        acum = True
+
+        combo_acumulado = QComboBox()
+        combo_acumulado.addItems(["Elija una mamawebo", "Acumulativa", "No acumulativa"])
+        combo.addWidget(QLabel("Tipo de distribución: "))
+        combo.addWidget(combo_acumulado)
+
+        resultado = distriPoison(x, media, acum)
+        resultado = round(resultado, 4)
+        print(f"Resultado Poisson: {resultado}")
+
+        label_resultado = QLabel(f"Resultado Poisson: {resultado}")
+
+        label_x = QLabel("Número de éxitos (x): ")
+        x_input = QLineEdit()
+        label_media = QLabel("Media (λ): ")
+        media_input = QLineEdit()
+
+        label_layout.addWidget(label_x)
+        label_layout.addWidget(label_media)
+
+        textfiel_layout.addWidget(x_input)
+        textfiel_layout.addWidget(media_input)
+
+        layoutH.addLayout(label_layout)
+        layoutH.addLayout(textfiel_layout)
+
+        Botones_layout = QVBoxLayout()
+        boton_actualizar = QPushButton("Actualizar")
+        boton_limpiar = QPushButton("Limpiar")
+
+        Botones_layout.addWidget(boton_actualizar)
+        Botones_layout.addWidget(boton_limpiar)
+
+        boton_actualizar.clicked.connect(lambda: self.actualizar_poisson(x_input, media_input, label_resultado, combo_acumulado))
+        boton_limpiar.clicked.connect(lambda: self.limpiar_poisson(x_input, media_input, label_resultado, combo_acumulado))
+
+        layout.addWidget(label_resultado)
+        layout.addLayout(layoutH)
+        layout.addLayout(combo)
+        layout.addLayout(Botones_layout)
+
+        panel.setLayout(layout)
+
+        return panel
+    
+    def actualizar_poisson(self, x_input, media_input, label_resultado, combo_acumulado):
+        try:
+            x = int(x_input.text())
+            media = float(media_input.text())
+            
+            seleccion = combo_acumulado.currentText()  # Obtener la selección actual del combo box
+
+            # Comprobar la selección
+            if seleccion == "Elija una mamawebo":
+                label_resultado.setText("Selecciona un valor acumulativo o no acumulativo, estupido.")
+                return  # Salir de la función si no se ha hecho una selección válida
+
+            acumulado = seleccion == "Acumulativa"  # Determinar si es acumulativa o no
+
+            if x < 0 or media < 0:
+                raise ValueError("Los valores deben ser positivos")
+
+            resultado = distriPoison(x, media, acumulado)  # Usar la función importada
+            resultado = round(resultado, 4)
+            label_resultado.setText(f"Resultado Poisson: {resultado}")
+        except ValueError as e:
+            label_resultado.setText(f"Error: {str(e)}")
+
+    def limpiar_poisson(self, x_input, media_input, label_resultado, combo_acumulado):
+        x_input.clear()
+        media_input.clear()
+        combo_acumulado.setCurrentIndex(0)
+        label_resultado.setText("")
         
+    def binomial(self):
+        panel = QWidget()
+        layout = QVBoxLayout()
+        layoutH = QHBoxLayout()
+        label_layout = QVBoxLayout()
+        textfiel_layout = QVBoxLayout()
+
+        n = 0
+        k = 0
+        p = 0
+        acum = True
+
+        combo_acumulado = QComboBox()
+        combo_acumulado.addItems(["Seleccione uno awebonado", "Acumulativa", "No acumulativa"])
+
+        resultado = distriBinomial(k, n, p, acum)
+        resultado = round(resultado, 4)
+        print(f"Resultado Binomial: {resultado}")
+
+        label_resultado = QLabel(f"Resultado Binomial: {resultado}")
+        
+        label_n = QLabel("Número de ensayos (n): ")
+        n_input = QLineEdit()
+        label_k = QLabel("Número de éxitos (K): ")
+        k_input = QLineEdit()
+        label_p = QLabel("Probabilidad de éxito (P): ")
+        p_input = QLineEdit()
+
+        label_layout.addWidget(label_n)
+        label_layout.addWidget(label_k)
+        label_layout.addWidget(label_p)
+        label_layout.addWidget(QLabel("Tipo de distribución: "))
+        
+        textfiel_layout.addWidget(n_input)
+        textfiel_layout.addWidget(k_input)
+        textfiel_layout.addWidget(p_input)
+
+        layoutH.addLayout(label_layout)
+        layoutH.addLayout(textfiel_layout)
+
+        Botones_layout = QVBoxLayout()
+        boton_actualizar = QPushButton("Actualizar")
+        boton_limpiar = QPushButton("Limpiar")
+
+        Botones_layout.addWidget(boton_actualizar)
+        Botones_layout.addWidget(boton_limpiar)
+
+        boton_actualizar.clicked.connect(lambda: self.actualizar_binomial(n_input, k_input, p_input, label_resultado, combo_acumulado))
+        boton_limpiar.clicked.connect(lambda: self.limpiar_binomial(n_input, k_input, p_input, label_resultado, combo_acumulado))
+
+        layout.addWidget(label_resultado)
+        layout.addLayout(layoutH)
+        layout.addWidget(combo_acumulado)
+        layout.addLayout(Botones_layout)
+
+        panel.setLayout(layout)
+
+        return panel
+
+    def actualizar_binomial(self, n_input, k_input, p_input, label_resultado, combo_acumulado):
+        try:
+            n = int(n_input.text())
+            k = int(k_input.text())
+            p = float(p_input.text())
+            acumulado = combo_acumulado.currentText() == "Acumulativa"
+
+            if n < 0 or k < 0 or not (0 <= p <= 1):
+                raise ValueError("Los valores deben ser positivos y 0 <= p <= 1")
+
+            resultado = distriBinomial(k, n, p, acumulado)
+            resultado = round(resultado, 4)
+            label_resultado.setText(f"Resultado Binomial: {resultado}")
+        except ValueError as e:
+            label_resultado.setText(f"Error: {str(e)}")
+
+    def limpiar_binomial(self, n_input, k_input, p_input, label_resultado, combo_acumulado):
+        n_input.clear()
+        k_input.clear()
+        p_input.clear()
+        combo_acumulado.setCurrentIndex(0)
+        label_resultado.setText("")
+   
     def change_panel(self, index):
         self.stack.setCurrentIndex(index)
 
