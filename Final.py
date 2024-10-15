@@ -7,7 +7,7 @@ from PyQt6.QtCore import Qt
 from readExcel import leerDatos
 from procesarDatos import listas
 from procesadorDatosIntervalos import generar_tabla_por_intervalos
-from distriBinomialPoisson import distriBinomial, distriPoison
+from distriBinomialPoisson import distriBinomial, distriPoison, distriNormal
 
 class FileSelector(QWidget):
     def __init__(self):
@@ -584,9 +584,9 @@ class Window2(QWidget):
         Botones_layout = QVBoxLayout()
         self.buttons = {
             "Boton_Panel1": QPushButton("Panel 1"),
-            "Boton_Panel2": QPushButton("Panel 2"),
-            "Boton_Panel3": QPushButton("Binomial"),
-            "Boton_Panel4": QPushButton("Poisson"),
+            "Boton_Panel2": QPushButton("Distribucion Normal"),
+            "Boton_Panel3": QPushButton("Distribucion Binomial"),
+            "Boton_Panel4": QPushButton("Distribucion Poisson"),
             "Boton_Regresar": QPushButton("Regresar")
         }
 
@@ -595,7 +595,7 @@ class Window2(QWidget):
 
         self.stack = QStackedWidget()
         self.stack.addWidget(QLabel("Panel 1 de la segunda ventana"))
-        self.stack.addWidget(QLabel("panel 2 XD"))
+        self.stack.addWidget(self.normal())
         self.stack.addWidget(self.binomial())
         self.stack.addWidget(self.poisson())
 
@@ -608,6 +608,82 @@ class Window2(QWidget):
         main_layout.addLayout(Botones_layout)
         main_layout.addWidget(self.stack)
         self.setLayout(main_layout)
+
+    def normal(self):
+        panel = QWidget()
+        layout = QVBoxLayout()
+        
+        layout.addWidget(QLabel("Distribución Normal"))
+
+        layoutH = QHBoxLayout()
+
+        self.resultado_normal = QLabel("")
+        layout.addWidget(self.resultado_normal)
+        
+        label_layout = QVBoxLayout()
+        label_layout.addWidget(QLabel("Valor (x):"))
+        label_layout.addWidget(QLabel("Media (μ):"))
+        label_layout.addWidget(QLabel("Desviación estándar (σ):"))
+        label_layout.addWidget(QLabel("Tipo de distribución:"))
+        
+        textfield_layout = QVBoxLayout()
+        self.x_input_normal = QLineEdit()
+        self.mu_input_normal = QLineEdit()
+        self.sigma_input_normal = QLineEdit()
+        
+        textfield_layout.addWidget(self.x_input_normal)
+        textfield_layout.addWidget(self.mu_input_normal)
+        textfield_layout.addWidget(self.sigma_input_normal)
+
+        self.combo_acumulado_normal = QComboBox()
+        self.combo_acumulado_normal.addItems(["Elija una opción", "Acumulativa", "No acumulativa"])
+        textfield_layout.addWidget(self.combo_acumulado_normal)
+
+        layoutH.addLayout(label_layout)
+        layoutH.addLayout(textfield_layout)
+        
+        boton_calcular_normal = QPushButton("Calcular Normal")
+        boton_calcular_normal.clicked.connect(self.calcular_normal)
+        layout.addLayout(layoutH)
+        layout.addWidget(boton_calcular_normal)
+
+        boton_limpiar_normal = QPushButton("Limpiar")
+        boton_limpiar_normal.clicked.connect(self.limpiar_normal)
+        layout.addWidget(boton_limpiar_normal)
+
+        panel.setLayout(layout)
+        return panel
+
+    def calcular_normal(self):
+        try:
+            x = float(self.x_input_normal.text())
+            mu = float(self.mu_input_normal.text())
+            sigma = float(self.sigma_input_normal.text())
+        except ValueError:
+            self.resultado_normal.setText("Por favor, ingrese valores válidos para x, μ y σ. estupido")
+            return
+
+        acumulado = self.combo_acumulado_normal.currentText() == "Acumulativa"
+
+        if self.combo_acumulado_normal.currentText() == "Elija una opción":
+            self.resultado_normal.setText("Por favor seleccione una opción acumulativa o no acumulativa inbecil, una sola cosa que hacer, puta sin neuronas")
+            return
+
+        try:
+            resultado = distriNormal(x, mu, sigma, acumulado)
+            if acumulado:
+                self.resultado_normal.setText(f"Probabilidad acumulada (CDF): {resultado:.4f}")
+            else:
+                self.resultado_normal.setText(f"Densidad normal (PDF): {resultado:.4f}")
+        except ValueError as e:
+            self.resultado_normal.setText(str(e))
+
+    def limpiar_normal(self):
+        self.x_input_normal.clear()
+        self.mu_input_normal.clear()
+        self.sigma_input_normal.clear()
+        self.combo_acumulado_normal.setCurrentIndex(0)
+        self.resultado_normal.clear()
 
     def poisson(self):
         panel = QWidget()
@@ -664,7 +740,7 @@ class Window2(QWidget):
         panel.setLayout(layout)
 
         return panel
-    
+        
     def actualizar_poisson(self, x_input, media_input, label_resultado, combo_acumulado):
         try:
             x = int(x_input.text())
