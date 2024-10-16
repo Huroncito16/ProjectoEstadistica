@@ -1,6 +1,6 @@
 from datetime import date
 import sys
-from PyQt6.QtWidgets import QComboBox, QScrollArea, QSizePolicy, QTableWidget, QTableWidgetItem, QLineEdit, QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFileDialog, QStackedWidget
+from PyQt6.QtWidgets import QDialog, QComboBox, QScrollArea, QSizePolicy, QTableWidget, QTableWidgetItem, QLineEdit, QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFileDialog, QStackedWidget
 from PyQt6.QtCharts import QLineSeries, QChart, QChartView, QBarSeries, QBarSet, QBarCategoryAxis, QValueAxis
 from PyQt6.QtGui import QPainter, QIcon, QPixmap, QGuiApplication
 from PyQt6.QtCore import Qt
@@ -155,7 +155,6 @@ class Window1(QWidget):
         layout.addWidget(self.stack)
         self.setLayout(layout)
 
-
     def open_and_display_file(self):
         file_path = self.file_selector.open_file_dialog()
         if file_path:
@@ -283,14 +282,22 @@ class Window1(QWidget):
        
         actualizar_button = QPushButton("Actualizar Tabla")
         actualizar_button.clicked.connect(self.actualizar_intervalo)
+        abrir_ventana_button = QPushButton('Calcular Cuartiles, Deciles y Percentiles')
+        abrir_ventana_button.clicked.connect(self.abrir_ventana_calculos)
         
                 
         Layout_inter.addWidget(self.table_Inter)
         Layout_inter.addWidget(self.table_resul_inter)
+        Layout_inter.addWidget(abrir_ventana_button)
         Layout_inter.addWidget(actualizar_button)
         intervalos.setLayout(Layout_inter)
 
         return intervalos
+    
+    def abrir_ventana_calculos(self):
+        datos_inter = self.table_Inter
+        ventana_calculos = VentanaCalculos(datos_inter)
+        ventana_calculos.exec()
 
     def actualizar_intervalo(self):
         if self.saved_file_path:
@@ -568,6 +575,131 @@ class Window1(QWidget):
 
         self.move(window_geometry.topLeft())
 
+class VentanaCalculos(QDialog):
+    def __init__(self, datos_inter):
+        super().__init__()
+
+        self.setWindowTitle('Cálculo de Cuartiles, Deciles y Percentiles')
+        self.setGeometry(100, 100, 400, 300)
+        self.center_window()
+
+        layout = QVBoxLayout()
+
+        self.datos_inter = datos_inter
+        cuartil_layout = QHBoxLayout()
+        cuartil_label = QLabel('Cuartil:')
+        self.cuartil_combo = QComboBox()
+        self.cuartil_combo.addItems(['Seleccionar Cuartil', '1', '2', '3', '4'])
+        cuartil_button = QPushButton('Calcular')
+        cuartil_button.clicked.connect(self.calcular_cuartil)
+        self.cuartil_resultado = QLabel('El resultado es:')
+        cuartil_layout.addWidget(cuartil_label)
+        cuartil_layout.addWidget(self.cuartil_combo)
+        cuartil_layout.addWidget(cuartil_button)
+
+        decil_layout = QHBoxLayout()
+        decil_label = QLabel('Decil:')
+        self.decil_combo = QComboBox()
+        self.decil_combo.addItems(['Seleccionar Decil', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'])
+        decil_button = QPushButton('Calcular')
+        decil_button.clicked.connect(self.calcular_decil)
+        self.decil_resultado = QLabel('El resultado es:')
+        decil_layout.addWidget(decil_label)
+        decil_layout.addWidget(self.decil_combo)
+        decil_layout.addWidget(decil_button)
+
+        # Sección para calcular Percentiles
+        percentil_layout = QHBoxLayout()
+        percentil_label = QLabel('Percentil:')
+        self.percentil_combo = QComboBox()
+        self.percentil_combo.addItems([f'{i}' for i in range(1, 101)])
+        percentil_button = QPushButton('Calcular')
+        percentil_button.clicked.connect(self.calcular_percentil)
+        self.percentil_resultado = QLabel('El resultado es:')
+        percentil_layout.addWidget(percentil_label)
+        percentil_layout.addWidget(self.percentil_combo)
+        percentil_layout.addWidget(percentil_button)
+
+        # Agregar layouts a la ventana principal
+        layout.addLayout(cuartil_layout)
+        layout.addWidget(self.cuartil_resultado)
+        layout.addLayout(decil_layout)
+        layout.addWidget(self.decil_resultado)
+        layout.addLayout(percentil_layout)
+        layout.addWidget(self.percentil_resultado)
+
+        self.setLayout(layout)
+
+    def calcular_cuartil(self):
+        cuartil = self.cuartil_combo.currentText()
+        if cuartil != 'Seleccionar Cuartil':
+            k = int(cuartil)
+            N = sum([float(self.datos_inter.item(i, 3).text()) for i in range(self.datos_inter.rowCount())])
+            
+            posicion = k * N / 4
+            frecuencia_acumulada = 0
+            for i in range(self.datos_inter.rowCount()):
+                frecuencia_acumulada += float(self.datos_inter.item(i, 3).text())
+                if frecuencia_acumulada >= posicion:
+                    li = float(self.datos_inter.item(i, 1).text())
+                    fa = frecuencia_acumulada - float(self.datos_inter.item(i, 3).text())
+                    f = float(self.datos_inter.item(i, 3).text()) 
+                    i_width = float(self.datos_inter.item(i, 2).text()) - li 
+                    
+                    cuartil_value = li + ((posicion - fa) * i_width) / f
+                    self.cuartil_resultado.setText(f'El resultado del Cuartil {cuartil} es: {cuartil_value:.2f}')
+                break
+
+    def calcular_decil(self):
+        decil = self.decil_combo.currentText()
+        if decil != 'Seleccionar Decil':
+            k = int(decil)
+            N = sum([float(self.datos_inter.item(i, 3).text()) for i in range(self.datos_inter.rowCount())])
+            
+            posicion = k * N / 10
+            frecuencia_acumulada = 0
+            for i in range(self.datos_inter.rowCount()):
+                frecuencia_acumulada += float(self.datos_inter.item(i, 3).text())
+                if frecuencia_acumulada >= posicion:
+                    li = float(self.datos_inter.item(i, 1).text())
+                    fa = frecuencia_acumulada - float(self.datos_inter.item(i, 3).text())
+                    f = float(self.datos_inter.item(i, 3).text()) 
+                    i_width = float(self.datos_inter.item(i, 2).text()) - li
+                    
+                    decil_value = li + ((posicion - fa) * i_width) / f
+                    self.decil_resultado.setText(f'El resultado del Decil {decil} es: {decil_value:.2f}')
+                    break
+
+    def calcular_percentil(self):
+        decil = self.decil_combo.currentText()
+        if decil != 'Seleccionar Decil':
+            k = int(decil)
+            N = sum([float(self.datos_inter.item(i, 3).text()) for i in range(self.datos_inter.rowCount())])  # Total de frecuencias
+            
+            # Encontrar la clase que contiene el decil
+            posicion = k * N / 100
+            frecuencia_acumulada = 0
+            for i in range(self.datos_inter.rowCount()):
+                frecuencia_acumulada += float(self.datos_inter.item(i, 3).text())
+                if frecuencia_acumulada >= posicion:
+                    li = float(self.datos_inter.item(i, 1).text())  # Límite inferior
+                    fa = frecuencia_acumulada - float(self.datos_inter.item(i, 3).text())  # Frecuencia acumulada anterior
+                    f = float(self.datos_inter.item(i, 3).text())  # Frecuencia de la clase
+                    i_width = float(self.datos_inter.item(i, 2).text()) - li  # Ancho del intervalo
+                    
+                    decil_value = li + ((posicion - fa) * i_width) / f
+                    self.percentil_resultado.setText(f'El resultado del percentil {decil} es: {decil_value:.2f}')
+                    break
+    
+    def center_window(self):
+        screen = QGuiApplication.primaryScreen().geometry()
+        window_geometry = self.frameGeometry()
+
+        center_point = screen.center()
+        window_geometry.moveCenter(center_point)
+
+        self.move(window_geometry.topLeft())
+
 class Window2(QWidget):
     def __init__(self, previous_window):
         super().__init__()
@@ -768,7 +900,6 @@ class Window2(QWidget):
 
         resultado = distriPoison(x, media, acum)
         resultado = round(resultado, 4)
-        print(f"Resultado Poisson: {resultado}")
 
         label_resultado = QLabel(f"Resultado Poisson: {resultado}")
 
@@ -851,7 +982,6 @@ class Window2(QWidget):
 
         resultado = distriBinomial(k, n, p, acum)
         resultado = round(resultado, 4)
-        print(f"Resultado Binomial: {resultado}")
 
         label_resultado = QLabel(f"Resultado Binomial: {resultado}")
         
@@ -899,7 +1029,7 @@ class Window2(QWidget):
             n = int(n_input.text())
             k = int(k_input.text())
             p = float(p_input.text())
-            
+
             seleccion = combo_acumulado.currentText()
             if seleccion == "Elija una opción":
                 label_resultado.setText("Selecciona un valor acumulativo o no acumulativo.")

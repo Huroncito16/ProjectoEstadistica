@@ -1,232 +1,121 @@
-import sys
-import math
-import matplotlib.pyplot as plt
 from PyQt6.QtWidgets import (
-    QApplication, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, 
-    QStackedWidget, QGridLayout
+    QApplication, QMainWindow, QWidget, QLabel, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton, QDialog
 )
-from PyQt6.QtGui import QIcon
-from PyQt6.QtCore import Qt
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+import sys
 
-class Window2(QWidget):
-    def __init__(self, previous_window):
+# Ventana que calcula cuartiles, deciles y percentiles
+class VentanaCalculos(QDialog):
+    def __init__(self):
         super().__init__()
-        self.previous_window = previous_window
-        self.setWindowTitle("Ventana 2")
-        self.setMaximumSize(1000, 600)
-        self.setMinimumSize(800, 400)
-        self.setGeometry(100, 100, 800, 400)
-        self.setWindowIcon(QIcon("./img/logo.png"))
 
-        main_layout = QHBoxLayout()
+        # Configuración de la ventana
+        self.setWindowTitle('Cálculo de Cuartiles, Deciles y Percentiles')
+        self.setGeometry(100, 100, 400, 300)
 
-        self.center_window()
+        layout = QVBoxLayout()
 
-        # Botones para los paneles
-        botones_layout = QVBoxLayout()
-        self.buttons = {
-            "Boton_Panel1": QPushButton("Panel 1"),
-            "Boton_Panel2": QPushButton("Panel 2"),
-            "Boton_Panel3": QPushButton("Distribución Binomial"),
-            "Boton_Panel4": QPushButton("Distribución de Poisson"),
-            "Boton_Regresar": QPushButton("Regresar")
-        }
+        # Sección para calcular Cuartiles
+        cuartil_layout = QHBoxLayout()
+        cuartil_label = QLabel('Cuartil:')
+        self.cuartil_combo = QComboBox()
+        self.cuartil_combo.addItems(['Seleccionar Cuartil', '1', '2', '3', '4'])
+        cuartil_button = QPushButton('Calcular')
+        cuartil_button.clicked.connect(self.calcular_cuartil)
+        self.cuartil_resultado = QLabel('El resultado es:')
+        cuartil_layout.addWidget(cuartil_label)
+        cuartil_layout.addWidget(self.cuartil_combo)
+        cuartil_layout.addWidget(cuartil_button)
 
-        for button in self.buttons.values():
-            botones_layout.addWidget(button)
+        # Sección para calcular Deciles
+        decil_layout = QHBoxLayout()
+        decil_label = QLabel('Decil:')
+        self.decil_combo = QComboBox()
+        self.decil_combo.addItems(['Seleccionar Decil', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'])
+        decil_button = QPushButton('Calcular')
+        decil_button.clicked.connect(self.calcular_decil)
+        self.decil_resultado = QLabel('El resultado es:')
+        decil_layout.addWidget(decil_label)
+        decil_layout.addWidget(self.decil_combo)
+        decil_layout.addWidget(decil_button)
 
-        # Crear el QStackedWidget
-        self.stack = QStackedWidget()
-        self.stack.addWidget(QLabel("Contenido del Panel 1", alignment=Qt.AlignmentFlag.AlignCenter))
-        self.stack.addWidget(QLabel("Contenido del Panel 2", alignment=Qt.AlignmentFlag.AlignCenter))
+        # Sección para calcular Percentiles
+        percentil_layout = QHBoxLayout()
+        percentil_label = QLabel('Percentil:')
+        self.percentil_combo = QComboBox()
+        self.percentil_combo.addItems([f'{i}' for i in range(1, 101)])
+        percentil_button = QPushButton('Calcular')
+        percentil_button.clicked.connect(self.calcular_percentil)
+        self.percentil_resultado = QLabel('El resultado es:')
+        percentil_layout.addWidget(percentil_label)
+        percentil_layout.addWidget(self.percentil_combo)
+        percentil_layout.addWidget(percentil_button)
 
-        # Panel 3: Distribución Binomial
-        binomial_layout, self.binomial_input_fields, self.binomial_result_label, self.binomial_canvas = self.create_binomial_panel()
-        panel_binomial = QWidget()
-        panel_binomial.setLayout(binomial_layout)
-        self.stack.addWidget(panel_binomial)
+        # Agregar layouts a la ventana principal
+        layout.addLayout(cuartil_layout)
+        layout.addWidget(self.cuartil_resultado)
+        layout.addLayout(decil_layout)
+        layout.addWidget(self.decil_resultado)
+        layout.addLayout(percentil_layout)
+        layout.addWidget(self.percentil_resultado)
 
-        # Panel 4: Distribución de Poisson
-        poisson_layout, self.poisson_input_fields, self.poisson_result_label, self.poisson_canvas = self.create_poisson_panel()
-        panel_poisson = QWidget()
-        panel_poisson.setLayout(poisson_layout)
-        self.stack.addWidget(panel_poisson)
+        self.setLayout(layout)
 
-        # Conectar los botones para cambiar entre paneles
-        self.buttons["Boton_Panel1"].clicked.connect(lambda: self.change_panel(0))
-        self.buttons["Boton_Panel2"].clicked.connect(lambda: self.change_panel(1))
-        self.buttons["Boton_Panel3"].clicked.connect(lambda: self.change_panel(2))
-        self.buttons["Boton_Panel4"].clicked.connect(lambda: self.change_panel(3))
-        self.buttons["Boton_Regresar"].clicked.connect(self.regresar)
+    def calcular_cuartil(self):
+        cuartil = self.cuartil_combo.currentText()
+        if cuartil != 'Seleccionar Cuartil':
+            resultado = f'Cuartil {cuartil} calculado'
+            self.cuartil_resultado.setText(f'El resultado es: {resultado}')
 
-        # Agregar los layouts
-        main_layout.addLayout(botones_layout)
-        main_layout.addWidget(self.stack)
-        self.setLayout(main_layout)
+    def calcular_decil(self):
+        decil = self.decil_combo.currentText()
+        if decil != 'Seleccionar Decil':
+            resultado = f'Decil {decil} calculado'
+            self.decil_resultado.setText(f'El resultado es: {resultado}')
 
-    def create_binomial_panel(self):
-        layout = QGridLayout()
+    def calcular_percentil(self):
+        percentil = self.percentil_combo.currentText()
+        resultado = f'Percentil {percentil} calculado'
+        self.percentil_resultado.setText(f'El resultado es: {resultado}')
 
-        # Etiquetas y campos de entrada
-        layout.addWidget(QLabel("Ensayos (n):"), 0, 0)
-        n_input = QLineEdit()
-        layout.addWidget(n_input, 0, 1)
 
-        layout.addWidget(QLabel("Éxitos (k):"), 1, 0)
-        k_input = QLineEdit()
-        layout.addWidget(k_input, 1, 1)
+# Ventana principal que tiene un botón para abrir la ventana de cálculos
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
 
-        layout.addWidget(QLabel("Probabilidad de éxito (p):"), 2, 0)
-        p_input = QLineEdit()
-        layout.addWidget(p_input, 2, 1)
+        # Configuración de la ventana principal
+        self.setWindowTitle('Ventana Principal')
+        self.setGeometry(100, 100, 400, 200)
 
-        # Botón para calcular y limpiar
-        calcular_btn = QPushButton("Calcular Binomial")
-        layout.addWidget(calcular_btn, 3, 0, 1, 2)
+        # Layout principal
+        layout = QVBoxLayout()
 
-        limpiar_btn = QPushButton("Limpiar")
-        layout.addWidget(limpiar_btn, 4, 0, 1, 2)
+        # Etiqueta de instrucción
+        label = QLabel("Haz clic en el botón para calcular cuartiles, deciles y percentiles")
 
-        # Canvas para el gráfico
-        canvas = FigureCanvas(plt.figure())
-        layout.addWidget(canvas, 5, 0, 1, 2)
+        # Botón para abrir la ventana de cálculos
+        abrir_ventana_button = QPushButton('Abrir ventana de cálculos')
+        abrir_ventana_button.clicked.connect(self.abrir_ventana_calculos)
 
-        # Etiqueta para mostrar resultados
-        result_label = QLabel("")
-        layout.addWidget(result_label, 6, 0, 1, 2)
+        # Agregar widgets al layout
+        layout.addWidget(label)
+        layout.addWidget(abrir_ventana_button)
 
-        # Conectar el botón de calcular
-        calcular_btn.clicked.connect(lambda: self.calcular_binomial(n_input, k_input, p_input, canvas, result_label))
+        # Configuración del contenedor principal
+        container = QWidget()
+        container.setLayout(layout)
+        self.setCentralWidget(container)
 
-        # Conectar el botón de limpiar
-        limpiar_btn.clicked.connect(lambda: self.limpiar_campos([n_input, k_input, p_input], canvas, result_label))
+    def abrir_ventana_calculos(self):
+        # Crear y mostrar la ventana de cálculos
+        ventana_calculos = VentanaCalculos()
+        ventana_calculos.exec()
 
-        return layout, [n_input, k_input, p_input], result_label, canvas
-
-    def create_poisson_panel(self):
-        layout = QGridLayout()
-
-        # Etiquetas y campos de entrada
-        layout.addWidget(QLabel("Eventos (x):"), 0, 0)
-        x_input = QLineEdit()
-        layout.addWidget(x_input, 0, 1)
-
-        layout.addWidget(QLabel("Media (λ):"), 1, 0)
-        lambda_input = QLineEdit()
-        layout.addWidget(lambda_input, 1, 1)
-
-        # Botón para calcular y limpiar
-        calcular_btn = QPushButton("Calcular Poisson")
-        layout.addWidget(calcular_btn, 2, 0, 1, 2)
-
-        limpiar_btn = QPushButton("Limpiar")
-        layout.addWidget(limpiar_btn, 3, 0, 1, 2)
-
-        # Canvas para el gráfico
-        canvas = FigureCanvas(plt.figure())
-        layout.addWidget(canvas, 4, 0, 1, 2)
-
-        # Etiqueta para mostrar resultados
-        result_label = QLabel("")
-        layout.addWidget(result_label, 5, 0, 1, 2)
-
-        # Conectar el botón de calcular
-        calcular_btn.clicked.connect(lambda: self.calcular_poisson(x_input, lambda_input, canvas, result_label))
-
-        # Conectar el botón de limpiar
-        limpiar_btn.clicked.connect(lambda: self.limpiar_campos([x_input, lambda_input], canvas, result_label))
-
-        return layout, [x_input, lambda_input], result_label, canvas
-
-    def change_panel(self, index):
-        self.stack.setCurrentIndex(index)
-
-    def regresar(self):
-        self.previous_window.show()
-        self.close()
-
-    def center_window(self):
-        screen = QApplication.primaryScreen().geometry()
-        window_geometry = self.frameGeometry()
-        window_geometry.moveCenter(screen.center())
-        self.move(window_geometry.topLeft())
-
-    def calcular_binomial(self, n_input, k_input, p_input, canvas, result_label):
-        try:
-            n = int(n_input.text())
-            k = int(k_input.text())
-            p = float(p_input.text())
-
-            if n < 0 or k < 0 or not (0 <= p <= 1):
-                raise ValueError("Los valores deben ser positivos y 0 <= p <= 1")
-
-            # Calcular el resultado
-            result = self.distriBinomial(k, n, p, False)
-            result_label.setText(f"Resultado Binomial: {result:.4f}")
-
-            # Plotear el gráfico
-            self.plot_binomial(n, k, p, canvas)
-
-        except ValueError as ve:
-            result_label.setText(str(ve))
-
-    def calcular_poisson(self, x_input, lambda_input, canvas, result_label):
-        try:
-            x = int(x_input.text())
-            lmbda = float(lambda_input.text())
-
-            if x < 0 or lmbda < 0:
-                raise ValueError("Los valores deben ser positivos")
-
-            # Calcular el resultado
-            result = self.distriPoisson(x, lmbda, False)
-            result_label.setText(f"Resultado Poisson: {result:.4f}")
-
-            # Plotear el gráfico
-            self.plot_poisson(x, lmbda, canvas)
-
-        except ValueError as ve:
-            result_label.setText(str(ve))
-
-    def distriBinomial(self, k, n, p, acumulado):
-        comb = math.comb(n, k)
-        pk = p ** k
-        qN_K = (1 - p) ** (n - k)
-        return comb * pk * qN_K
-
-    def distriPoisson(self, x, media, acumulado):
-        return (media ** x) * math.exp(-media) / math.factorial(x)
-
-    def plot_binomial(self, n, k, p, canvas):
-        plt.cla()
-        x = range(0, n + 1)
-        y = [self.distriBinomial(i, n, p, False) for i in x]
-        plt.bar(x, y, color='blue')
-        plt.title("Distribución Binomial")
-        plt.xlabel("Número de Éxitos (k)")
-        plt.ylabel("Probabilidad")
-        canvas.draw()
-
-    def plot_poisson(self, x, lmbda, canvas):
-        plt.cla()
-        x_values = range(0, x + 5)
-        y_values = [self.distriPoisson(i, lmbda, False) for i in x_values]
-        plt.bar(x_values, y_values, color='orange')
-        plt.title("Distribución de Poisson")
-        plt.xlabel("Eventos (x)")
-        plt.ylabel("Probabilidad")
-        canvas.draw()
-
-    def limpiar_campos(self, inputs, canvas, result_label):
-        for input_field in inputs:
-            input_field.clear()
-        result_label.clear()
-        plt.cla()
-        canvas.draw()
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = Window2(previous_window=None)  # Cambia esto según tu implementación anterior
-    window.show()
+
+    # Crear la ventana principal
+    main_window = MainWindow()
+    main_window.show()
+
     sys.exit(app.exec())
