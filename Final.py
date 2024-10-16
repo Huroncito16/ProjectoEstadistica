@@ -8,6 +8,7 @@ from readExcel import leerDatos
 from procesarDatos import listas
 from procesadorDatosIntervalos import generar_tabla_por_intervalos
 from distriBinomialPoisson import distriBinomial, distriPoison, distriNormal
+from analiCombi import combConRep, combSinRep, perCir, perConRep, perSinRep, perSinRepAll
 
 class FileSelector(QWidget):
     def __init__(self):
@@ -583,7 +584,7 @@ class Window2(QWidget):
 
         Botones_layout = QVBoxLayout()
         self.buttons = {
-            "Boton_Panel1": QPushButton("Panel 1"),
+            "Boton_Panel1": QPushButton("combinaciones"),
             "Boton_Panel2": QPushButton("Distribucion Normal"),
             "Boton_Panel3": QPushButton("Distribucion Binomial"),
             "Boton_Panel4": QPushButton("Distribucion Poisson"),
@@ -594,7 +595,7 @@ class Window2(QWidget):
             Botones_layout.addWidget(button)
 
         self.stack = QStackedWidget()
-        self.stack.addWidget(QLabel("Panel 1 de la segunda ventana"))
+        self.stack.addWidget(self.combinaciones())
         self.stack.addWidget(self.normal())
         self.stack.addWidget(self.binomial())
         self.stack.addWidget(self.poisson())
@@ -608,6 +609,72 @@ class Window2(QWidget):
         main_layout.addLayout(Botones_layout)
         main_layout.addWidget(self.stack)
         self.setLayout(main_layout)
+    
+    def combinaciones(self):
+        panel = QWidget()
+        layout = QVBoxLayout()
+        labels = QVBoxLayout()
+        text = QVBoxLayout()
+        inputs = QHBoxLayout()
+        
+        combo = QComboBox()
+        combo.addItem("Combinaciones sin repetición")
+        combo.addItem("Combinaciones con repetición")
+        combo.addItem("Permutaciones sin repetición")
+        combo.addItem("Permutaciones con repetición")
+        combo.addItem("Permutaciones sin repetición (n!)")
+        combo.addItem("Permutaciones circulares")
+
+        label_n = QLabel("Valor de n:")
+        n_input = QLineEdit()
+        label_r = QLabel("Valor de r:")
+        r_input = QLineEdit()
+
+        boton_calcular = QPushButton("Calcular")
+        
+        label_resultado = QLabel("Resultado: ")
+
+        layout.addWidget(label_resultado)
+        labels.addWidget(label_n)
+        text.addWidget(n_input)
+        labels.addWidget(label_r)
+        text.addWidget(r_input)
+        inputs.addLayout(labels)
+        inputs.addLayout(text)
+        layout.addLayout(inputs)
+        layout.addWidget(combo)
+        layout.addWidget(boton_calcular)
+
+        boton_calcular.clicked.connect(lambda: self.calcular_combinaciones(n_input, r_input, label_resultado, combo))
+
+        panel.setLayout(layout)
+        return panel
+
+    def calcular_combinaciones(self, n_input, r_input, label_resultado, combo):
+        try:
+            # Obtener valores de n y r
+            n = int(n_input.text())
+            r = int(r_input.text())
+
+            # Selección del cálculo según el tipo de combinatoria
+            tipo = combo.currentText()
+            if tipo == "Combinaciones sin repetición":
+                res = combSinRep(n, r)
+            elif tipo == "Combinaciones con repetición":
+                res = combConRep(n, r)
+            elif tipo == "Permutaciones sin repetición":
+                res = perSinRep(n, r)
+            elif tipo == "Permutaciones con repetición":
+                res = perConRep(n, r)
+            elif tipo == "Permutaciones sin repetición (n!)":
+                res = perSinRepAll(n)
+            elif tipo == "Permutaciones circulares":
+                res = perCir(n)
+
+            # Mostrar el resultado
+            label_resultado.setText(f"Resultado: {round(res, 4)}")
+        except ValueError:
+            label_resultado.setText("Por favor, ingresa valores válidos para n y r.")
 
     def normal(self):
         panel = QWidget()
@@ -774,6 +841,7 @@ class Window2(QWidget):
         panel = QWidget()
         layout = QVBoxLayout()
         layoutH = QHBoxLayout()
+        combo = QHBoxLayout()
         label_layout = QVBoxLayout()
         textfiel_layout = QVBoxLayout()
 
@@ -801,7 +869,8 @@ class Window2(QWidget):
         label_layout.addWidget(label_n)
         label_layout.addWidget(label_k)
         label_layout.addWidget(label_p)
-        label_layout.addWidget(QLabel("Tipo de distribución: "))
+        combo.addWidget(QLabel("Tipo de distribución: "))
+        combo.addWidget(combo_acumulado)
         
         textfiel_layout.addWidget(n_input)
         textfiel_layout.addWidget(k_input)
@@ -822,7 +891,7 @@ class Window2(QWidget):
 
         layout.addWidget(label_resultado)
         layout.addLayout(layoutH)
-        layout.addWidget(combo_acumulado)
+        layout.addLayout(combo)
         layout.addLayout(Botones_layout)
 
         panel.setLayout(layout)

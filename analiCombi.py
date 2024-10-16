@@ -9,9 +9,6 @@ def combConRep(n,r):
 def perSinRep( n , r ):
     return ( fac( n ) / fac( n - r)  )
 
-def perSinRep( n , r ):
-    return ( fac( n ) / fac( n - r)  )
-
 def perConRep( n , r ):
     return ( n ** r )
 
