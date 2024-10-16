@@ -652,11 +652,9 @@ class Window2(QWidget):
 
     def calcular_combinaciones(self, n_input, r_input, label_resultado, combo):
         try:
-            # Obtener valores de n y r
             n = int(n_input.text())
             r = int(r_input.text())
 
-            # Selección del cálculo según el tipo de combinatoria
             tipo = combo.currentText()
             if tipo == "Combinaciones sin repetición":
                 res = combSinRep(n, r)
@@ -671,7 +669,6 @@ class Window2(QWidget):
             elif tipo == "Permutaciones circulares":
                 res = perCir(n)
 
-            # Mostrar el resultado
             label_resultado.setText(f"Resultado: {round(res, 4)}")
         except ValueError:
             label_resultado.setText("Por favor, ingresa valores válidos para n y r.")
@@ -727,13 +724,13 @@ class Window2(QWidget):
             mu = float(self.mu_input_normal.text())
             sigma = float(self.sigma_input_normal.text())
         except ValueError:
-            self.resultado_normal.setText("Por favor, ingrese valores válidos para x, μ y σ. estupido")
+            self.resultado_normal.setText("Por favor, ingrese valores válidos para proseguir")
             return
 
         acumulado = self.combo_acumulado_normal.currentText() == "Acumulativa"
 
         if self.combo_acumulado_normal.currentText() == "Elija una opción":
-            self.resultado_normal.setText("Por favor seleccione una opción acumulativa o no acumulativa inbecil, una sola cosa que hacer, puta sin neuronas")
+            self.resultado_normal.setText("Por favor seleccione una opción acumulativa o no acumulativa para continuar")
             return
 
         try:
@@ -765,7 +762,7 @@ class Window2(QWidget):
         acum = True
 
         combo_acumulado = QComboBox()
-        combo_acumulado.addItems(["Elija una mamawebo", "Acumulativa", "No acumulativa"])
+        combo_acumulado.addItems(["Elija una opción", "Acumulativa", "No acumulativa"])
         combo.addWidget(QLabel("Tipo de distribución: "))
         combo.addWidget(combo_acumulado)
 
@@ -813,19 +810,18 @@ class Window2(QWidget):
             x = int(x_input.text())
             media = float(media_input.text())
             
-            seleccion = combo_acumulado.currentText()  # Obtener la selección actual del combo box
+            seleccion = combo_acumulado.currentText()
 
-            # Comprobar la selección
-            if seleccion == "Elija una mamawebo":
-                label_resultado.setText("Selecciona un valor acumulativo o no acumulativo, estupido.")
-                return  # Salir de la función si no se ha hecho una selección válida
+            if seleccion == "Elija una opción":
+                label_resultado.setText("Selecciona un valor acumulativo o no acumulativo.")
+                return  
 
-            acumulado = seleccion == "Acumulativa"  # Determinar si es acumulativa o no
+            acumulado = seleccion == "Acumulativa"
 
             if x < 0 or media < 0:
                 raise ValueError("Los valores deben ser positivos")
 
-            resultado = distriPoison(x, media, acumulado)  # Usar la función importada
+            resultado = distriPoison(x, media, acumulado)
             resultado = round(resultado, 4)
             label_resultado.setText(f"Resultado Poisson: {resultado}")
         except ValueError as e:
@@ -851,7 +847,7 @@ class Window2(QWidget):
         acum = True
 
         combo_acumulado = QComboBox()
-        combo_acumulado.addItems(["Seleccione uno awebonado", "Acumulativa", "No acumulativa"])
+        combo_acumulado.addItems(["Elija una opción", "Acumulativa", "No acumulativa"])
 
         resultado = distriBinomial(k, n, p, acum)
         resultado = round(resultado, 4)
@@ -903,8 +899,14 @@ class Window2(QWidget):
             n = int(n_input.text())
             k = int(k_input.text())
             p = float(p_input.text())
+            
+            seleccion = combo_acumulado.currentText()
+            if seleccion == "Elija una opción":
+                label_resultado.setText("Selecciona un valor acumulativo o no acumulativo.")
+                return
+            
             acumulado = combo_acumulado.currentText() == "Acumulativa"
-
+            
             if n < 0 or k < 0 or not (0 <= p <= 1):
                 raise ValueError("Los valores deben ser positivos y 0 <= p <= 1")
 

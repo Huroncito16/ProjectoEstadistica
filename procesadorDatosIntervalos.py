@@ -58,12 +58,10 @@ def generar_tabla_por_intervalos(dato):
         fPorDDD.append(round(frecuencia[indice] * dVar**3, 2))
         fPorDDDD.append(round(frecuencia[indice] * dVar**4, 2))
 
-        # Moda
         if frecuencia[indice] > maxFre:
             indMaxFre = indice
             maxFre = frecuencia[indice]
 
-        # Mediana
         if posicionMediana <= fa[indice] and serchMediana:
             mediana = li[indice] + ((posicionMediana - fa[indice-1]) / frecuencia[indice]) * i
             mediana = round(mediana, 2)

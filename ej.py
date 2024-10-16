@@ -2,7 +2,7 @@ from readExcel import leerDatos as leer
 from procesadorDatosIntervalos import tablaPorIntervalos as porIntervalos
 
 datos = leer("ej.xlsx")
-tablaDeDatos,cuartiles,deciles,percentiles = porIntervalos(datos)#rawr definir variables
+tablaDeDatos,cuartiles,deciles,percentiles = porIntervalos(datos)
 cadena = ""
 conFila = 0
 for fila  in tablaDeDatos :
