@@ -24,6 +24,7 @@ class FileSelector(QWidget):
             self.file_path = file_paths[0]
             return self.file_path
         return None
+
 class MenuWindow(QWidget):
     def __init__(self):
         super().__init__()
@@ -54,6 +55,8 @@ class MenuWindow(QWidget):
 
         self.setLayout(layout)
 
+        self.apply_stylesheet()
+
     def open_window1(self):
         try:
             self.window1 = Window1(self)
@@ -81,6 +84,13 @@ class MenuWindow(QWidget):
         window_geometry.moveCenter(center_point)
 
         self.move(window_geometry.topLeft())
+
+    def apply_stylesheet(self):
+        qss_file = QFile("style.qss")
+        if qss_file.open(QIODevice.OpenModeFlag.ReadOnly | QIODevice.OpenModeFlag.Text):
+            stream = QTextStream(qss_file)
+            self.setStyleSheet(stream.readAll())
+    
 class Window1(QWidget):
     def __init__(self, previous_window):
         super().__init__()
@@ -148,6 +158,8 @@ class Window1(QWidget):
         self.buttons["Boton_ResumenEstadictico"].clicked.connect(lambda: self.change_panel(3))
         self.buttons["Boton_Graficos"].clicked.connect(lambda: self.change_panel(4))
         self.buttons["Boton_Regresar"].clicked.connect(self.regresar)
+
+        self.apply_stylesheet()
 
         layout.addLayout(Botones_layout)
         layout.addWidget(self.stack)
@@ -572,6 +584,13 @@ class Window1(QWidget):
         window_geometry.moveCenter(center_point)
 
         self.move(window_geometry.topLeft())
+
+    def apply_stylesheet(self):
+        qss_file = QFile("style.qss")
+        if qss_file.open(QIODevice.OpenModeFlag.ReadOnly | QIODevice.OpenModeFlag.Text):
+            stream = QTextStream(qss_file)
+            self.setStyleSheet(stream.readAll())
+
 class VentanaCalculos(QDialog):
     def __init__(self, datos_inter):
         super().__init__()
@@ -626,6 +645,8 @@ class VentanaCalculos(QDialog):
         layout.addWidget(self.percentil_resultado)
 
         self.setLayout(layout)
+
+        self.apply_stylesheet()
 
     def calcular_cuartil(self):
         cuartil = self.cuartil_combo.currentText()
@@ -696,6 +717,13 @@ class VentanaCalculos(QDialog):
         window_geometry.moveCenter(center_point)
 
         self.move(window_geometry.topLeft())
+    
+    def apply_stylesheet(self):
+        qss_file = QFile("ventanas.qss")
+        if qss_file.open(QIODevice.OpenModeFlag.ReadOnly | QIODevice.OpenModeFlag.Text):
+            stream = QTextStream(qss_file)
+            self.setStyleSheet(stream.readAll())
+
 class Window2(QWidget):
     def __init__(self, previous_window):
         super().__init__()
@@ -1071,8 +1099,6 @@ class Window2(QWidget):
         layout.addLayout(Botones_layout)
 
         panel.setLayout(layout)
-        
-        self.apply_stylesheet()
 
         return panel
 

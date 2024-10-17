@@ -1,5 +1,11 @@
+QMainWindow {
+    background-color: #2E3440;
+}
+QWidget{
+    background-color: #27374d;
+}
 QPushButton{
-    background-color: #dde6ed;
+    background-color: #8ba0b1;
     color: black;
     font: bold;
     border-radius: 5px;
@@ -7,11 +13,5 @@ QPushButton{
 }
 
 QPushButton:Hover{
-    background-color: #9db2bf;
-}
-
-QLineEdit{
-    background-color: none;
-    color: white;
-
+    background-color: #8bb3ca;
 }
