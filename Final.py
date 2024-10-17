@@ -3,7 +3,7 @@ import sys
 from PyQt6.QtWidgets import QDialog, QComboBox, QScrollArea, QSizePolicy, QTableWidget, QTableWidgetItem, QLineEdit, QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFileDialog, QStackedWidget
 from PyQt6.QtCharts import QLineSeries, QChart, QChartView, QBarSeries, QBarSet, QBarCategoryAxis, QValueAxis
 from PyQt6.QtGui import QPainter, QIcon, QPixmap, QGuiApplication
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QFile, QIODevice, QTextStream
 from readExcel import leerDatos
 from procesarDatos import listas
 from procesadorDatosIntervalos import generar_tabla_por_intervalos
@@ -63,12 +63,12 @@ class MenuWindow(QWidget):
             print(f"Ocurrió un error: {e}")
 
     def open_window2(self):
-        #try:
+        try:
             self.window2 = Window2(self)
             self.window2.show()
             self.close()
-        #except Exception as e:
-        #    print(f"Ocurrió un error: {e}")
+        except Exception as e:
+            print(f"Ocurrió un error: {e}")
 
     def close(self):
         return super().close()
@@ -707,6 +707,8 @@ class Window2(QWidget):
         self.setWindowIcon(QIcon("./img/logo.png"))
 
         main_layout = QHBoxLayout()
+        
+        self.apply_stylesheet()
 
         self.center_window()
 
@@ -826,6 +828,8 @@ class Window2(QWidget):
         boton_calcular.clicked.connect(lambda: self.calcular_combinaciones(n_input, r_input, label_resultado, combo))
 
         panel.setLayout(layout)
+        
+        self.apply_stylesheet()
         return panel
 
     def calcular_combinaciones(self, n_input, r_input, label_resultado, combo):
@@ -1067,6 +1071,8 @@ class Window2(QWidget):
         layout.addLayout(Botones_layout)
 
         panel.setLayout(layout)
+        
+        self.apply_stylesheet()
 
         return panel
 
@@ -1114,6 +1120,12 @@ class Window2(QWidget):
         window_geometry.moveCenter(center_point)
 
         self.move(window_geometry.topLeft())
+
+    def apply_stylesheet(self):
+        qss_file = QFile("style.qss")
+        if qss_file.open(QIODevice.OpenModeFlag.ReadOnly | QIODevice.OpenModeFlag.Text):
+            stream = QTextStream(qss_file)
+            self.setStyleSheet(stream.readAll())
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
