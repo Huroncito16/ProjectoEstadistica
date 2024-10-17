@@ -24,7 +24,6 @@ class FileSelector(QWidget):
             self.file_path = file_paths[0]
             return self.file_path
         return None
-
 class MenuWindow(QWidget):
     def __init__(self):
         super().__init__()
@@ -762,7 +761,6 @@ class Window2(QWidget):
         boton_calcular_normal_Inv = QPushButton("calcular")
         boton_calcular_normal_Inv.clicked.connect(lambda: self.calcular_Inv(textProbabilidad, textMedia, textDesviacion, label_resultado))
         
-        
         labels.addWidget(labelPeobabilidad)
         labels.addWidget(labelMedia)
         labels.addWidget(labelDesviacion)
@@ -776,12 +774,20 @@ class Window2(QWidget):
         panel.setLayout(layout)
         return panel
         
+    def calcular_Inv(self, textProbabilidad, textMedia, textDesviacion, label_resultado):
+        try:
+            probabilidad = float(textProbabilidad.text())
+            media = float(textMedia.text())
+            desviacion = float(textDesviacion.text())
+
+            # Cálculo de la inversa de la distribución normal
+            from scipy.stats import norm
+            resultado = norm.ppf(probabilidad, loc=media, scale=desviacion)
+
+            label_resultado.setText(f"El resultado es: {resultado:.4f}")
+        except ValueError:
+            label_resultado.setText("Ingrese valores válidos")
         
-        
-        
-        
-        
-    
     def combinaciones(self):
         panel = QWidget()
         layout = QVBoxLayout()
