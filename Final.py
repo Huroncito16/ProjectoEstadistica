@@ -35,11 +35,15 @@ class MenuWindow(QWidget):
         self.setWindowIcon(QIcon("./img/logo.png"))
         self.center_window()
 
-        layout = QVBoxLayout()
-        image = QLabel(self)
         pixmap = QPixmap("./img/banner3.jpg")
-        image.setPixmap(pixmap)     
-        layout.addWidget(image)
+        self.image_label = QLabel(self)
+        scaled_pixmap = pixmap.scaled(self.image_label.size(), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+        self.image_label.setPixmap(scaled_pixmap)
+        layout = QVBoxLayout()
+        #image = QLabel(self)
+        #pixmap = QPixmap("./img/banner3.jpg")
+        #image.setPixmap(pixmap)     
+        #layout.addWidget(image)
 
         self.button_window1 = QPushButton("Analisis Estadisticos")
         self.button_window2 = QPushButton("Combinaciones y Distrubuciones")
@@ -49,6 +53,7 @@ class MenuWindow(QWidget):
         self.button_window2.clicked.connect(self.open_window2)
         self.button_cerrar.clicked.connect(self.close)
 
+        layout.addWidget(self.image_label)
         layout.addWidget(self.button_window1)
         layout.addWidget(self.button_window2)
         layout.addWidget(self.button_cerrar)
@@ -56,6 +61,14 @@ class MenuWindow(QWidget):
         self.setLayout(layout)
 
         self.apply_stylesheet()
+    
+        self.image_label.resizeEvent = self.resize_image
+
+    def resize_image(self, event):
+        # Escalar la imagen cuando cambie el tamaño del QLabel
+        pixmap = QPixmap("./img/banner3.jpg")
+        scaled_pixmap = pixmap.scaled(self.image_label.size(), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+        self.image_label.setPixmap(scaled_pixmap)
 
     def open_window1(self):
         try:
