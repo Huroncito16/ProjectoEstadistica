@@ -82,7 +82,6 @@ class MenuWindow(QWidget):
         window_geometry.moveCenter(center_point)
 
         self.move(window_geometry.topLeft())
- 
 class Window1(QWidget):
     def __init__(self, previous_window):
         super().__init__()
@@ -574,7 +573,6 @@ class Window1(QWidget):
         window_geometry.moveCenter(center_point)
 
         self.move(window_geometry.topLeft())
-
 class VentanaCalculos(QDialog):
     def __init__(self, datos_inter):
         super().__init__()
@@ -699,7 +697,6 @@ class VentanaCalculos(QDialog):
         window_geometry.moveCenter(center_point)
 
         self.move(window_geometry.topLeft())
-
 class Window2(QWidget):
     def __init__(self, previous_window):
         super().__init__()
@@ -717,9 +714,10 @@ class Window2(QWidget):
         Botones_layout = QVBoxLayout()
         self.buttons = {
             "Boton_Panel1": QPushButton("combinaciones"),
-            "Boton_Panel2": QPushButton("Distribucion Normal"),
-            "Boton_Panel3": QPushButton("Distribucion Binomial"),
-            "Boton_Panel4": QPushButton("Distribucion Poisson"),
+            "Boton_Panel2": QPushButton("Distri Normal int"),
+            "Boton_Panel3": QPushButton("Distribucion Normal"),
+            "Boton_Panel4": QPushButton("Distribucion Binomial"),
+            "Boton_Panel5": QPushButton("Distribucion Poisson"),
             "Boton_Regresar": QPushButton("Regresar")
         }
 
@@ -728,6 +726,7 @@ class Window2(QWidget):
 
         self.stack = QStackedWidget()
         self.stack.addWidget(self.combinaciones())
+        self.stack.addWidget(self.normalInv())
         self.stack.addWidget(self.normal())
         self.stack.addWidget(self.binomial())
         self.stack.addWidget(self.poisson())
@@ -736,11 +735,52 @@ class Window2(QWidget):
         self.buttons["Boton_Panel2"].clicked.connect(lambda: self.change_panel(1))
         self.buttons["Boton_Panel3"].clicked.connect(lambda: self.change_panel(2))
         self.buttons["Boton_Panel4"].clicked.connect(lambda: self.change_panel(3))
+        self.buttons["Boton_Panel5"].clicked.connect(lambda: self.change_panel(4))
         self.buttons["Boton_Regresar"].clicked.connect(self.regresar)
 
         main_layout.addLayout(Botones_layout)
         main_layout.addWidget(self.stack)
         self.setLayout(main_layout)
+        
+    def normalInv(self):
+        panel = QWidget()
+        layout = QVBoxLayout()
+        labels = QVBoxLayout()
+        text = QVBoxLayout()
+        inputs = QHBoxLayout()
+        
+        labelPeobabilidad = QLabel("Ingrese una probabilidad: ")
+        textProbabilidad = QLineEdit()
+        labelMedia = QLabel("Ingrese un valor de media: ")
+        textMedia = QLineEdit()
+        labelDesviacion = QLabel("Ingrese una desviaciion")
+        textDesviacion = QLineEdit()
+        
+        label_resultado = QLabel("El resultado es: ")
+        layout.addWidget(label_resultado)
+        
+        boton_calcular_normal_Inv = QPushButton("calcular")
+        boton_calcular_normal_Inv.clicked.connect(lambda: self.calcular_Inv(textProbabilidad, textMedia, textDesviacion, label_resultado))
+        
+        
+        labels.addWidget(labelPeobabilidad)
+        labels.addWidget(labelMedia)
+        labels.addWidget(labelDesviacion)
+        text.addWidget(textProbabilidad)
+        text.addWidget(textMedia)
+        text.addWidget(textDesviacion)
+        inputs.addLayout(labels)
+        inputs.addLayout(text)
+        layout.addLayout(inputs)
+        layout.addWidget(boton_calcular_normal_Inv)
+        panel.setLayout(layout)
+        return panel
+        
+        
+        
+        
+        
+        
     
     def combinaciones(self):
         panel = QWidget()
@@ -862,7 +902,7 @@ class Window2(QWidget):
         acumulado = self.combo_acumulado_normal.currentText() == "Acumulativa"
 
         if self.combo_acumulado_normal.currentText() == "Elija una opción":
-            self.resultado_normal.setText("Por favor seleccione una opción acumulativa o no acumulativa para continuar")
+            self.resultado_normal.setText("Por favor seleccione una opción acumulativa o no acumulativa para continuar MARDITO")
             return
 
         try:

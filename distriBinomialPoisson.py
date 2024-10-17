@@ -1,6 +1,9 @@
 import analiCombi as comb
 import math
 
+def distriNormalInv(probabilidad, media, desviacion):
+    return norm.ppf(probabilidad, loc=madia, scale=desviacion)
+
 def distriBinomial(num_exitos, ensayos, prob_exito, acumulado):
     combinat = comb.combSinRep(ensayos, num_exitos)
     pk = prob_exito ** num_exitos
