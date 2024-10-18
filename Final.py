@@ -189,7 +189,7 @@ class Window1(QWidget):
         
         if self.saved_file_path:
             datos = leerDatos(self.saved_file_path)
-            print("leido perce XD")
+            print("leido parcero XD")
 
     def crear_tabla_sencilla(self):
         tabla_panel = QWidget()
@@ -748,9 +748,6 @@ class Window2(QWidget):
         self.setWindowIcon(QIcon("./img/logo.png"))
 
         main_layout = QHBoxLayout()
-        
-        self.apply_stylesheet()
-
         self.center_window()
 
         Botones_layout = QVBoxLayout()
@@ -783,6 +780,8 @@ class Window2(QWidget):
         main_layout.addLayout(Botones_layout)
         main_layout.addWidget(self.stack)
         self.setLayout(main_layout)
+
+        self.apply_stylesheet()
         
     def normalInv(self):
         panel = QWidget()
@@ -867,10 +866,8 @@ class Window2(QWidget):
         layout.addWidget(boton_calcular)
 
         boton_calcular.clicked.connect(lambda: self.calcular_combinaciones(n_input, r_input, label_resultado, combo))
-
-        panel.setLayout(layout)
         
-        self.apply_stylesheet()
+        panel.setLayout(layout)
         return panel
 
     def calcular_combinaciones(self, n_input, r_input, label_resultado, combo):
@@ -1024,7 +1021,6 @@ class Window2(QWidget):
         layout.addLayout(Botones_layout)
 
         panel.setLayout(layout)
-
         return panel
         
     def actualizar_poisson(self, x_input, media_input, label_resultado, combo_acumulado):
@@ -1112,7 +1108,6 @@ class Window2(QWidget):
         layout.addLayout(Botones_layout)
 
         panel.setLayout(layout)
-
         return panel
 
     def actualizar_binomial(self, n_input, k_input, p_input, label_resultado, combo_acumulado):
@@ -1136,7 +1131,7 @@ class Window2(QWidget):
             label_resultado.setText(f"Resultado Binomial: {resultado}")
         except ValueError as e:
             label_resultado.setText(f"Error: {str(e)}")
-
+        
     def limpiar_binomial(self, n_input, k_input, p_input, label_resultado, combo_acumulado):
         n_input.clear()
         k_input.clear()
