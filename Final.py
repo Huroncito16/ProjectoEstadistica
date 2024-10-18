@@ -4,6 +4,14 @@ from PyQt6.QtWidgets import QDialog, QComboBox, QScrollArea, QSizePolicy, QTable
 from PyQt6.QtCharts import QLineSeries, QChart, QChartView, QBarSeries, QBarSet, QBarCategoryAxis, QValueAxis
 from PyQt6.QtGui import QPainter, QIcon, QPixmap, QGuiApplication
 from PyQt6.QtCore import Qt, QFile, QIODevice, QTextStream
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.stats import norm, poisson, binom
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+
 from readExcel import leerDatos
 from procesarDatos import listas
 from procesadorDatosIntervalos import generar_tabla_por_intervalos
@@ -637,7 +645,6 @@ class VentanaCalculos(QDialog):
         decil_layout.addWidget(self.decil_combo)
         decil_layout.addWidget(decil_button)
 
-        # Sección para calcular Percentiles
         percentil_layout = QHBoxLayout()
         percentil_label = QLabel('Percentil:')
         self.percentil_combo = QComboBox()
@@ -649,13 +656,16 @@ class VentanaCalculos(QDialog):
         percentil_layout.addWidget(self.percentil_combo)
         percentil_layout.addWidget(percentil_button)
 
-        # Agregar layouts a la ventana principal
+        boton_regresar = QPushButton("Cerrar")
+        boton_regresar.clicked.connect(self.close)
+
         layout.addLayout(cuartil_layout)
         layout.addWidget(self.cuartil_resultado)
         layout.addLayout(decil_layout)
         layout.addWidget(self.decil_resultado)
         layout.addLayout(percentil_layout)
         layout.addWidget(self.percentil_resultado)
+        layout.addWidget(boton_regresar)
 
         self.setLayout(layout)
 
@@ -664,63 +674,80 @@ class VentanaCalculos(QDialog):
     def calcular_cuartil(self):
         cuartil = self.cuartil_combo.currentText()
         if cuartil != 'Seleccionar Cuartil':
-            k = int(cuartil)
-            N = sum([float(self.datos_inter.item(i, 3).text()) for i in range(self.datos_inter.rowCount())])
-            
-            posicion = k * N / 4
-            frecuencia_acumulada = 0
-            for i in range(self.datos_inter.rowCount()):
-                frecuencia_acumulada += float(self.datos_inter.item(i, 3).text())
-                if frecuencia_acumulada >= posicion:
-                    li = float(self.datos_inter.item(i, 1).text())
-                    fa = frecuencia_acumulada - float(self.datos_inter.item(i, 3).text())
-                    f = float(self.datos_inter.item(i, 3).text()) 
-                    i_width = float(self.datos_inter.item(i, 2).text()) - li 
-                    
-                    cuartil_value = li + ((posicion - fa) * i_width) / f
-                    self.cuartil_resultado.setText(f'El resultado del Cuartil {cuartil} es: {cuartil_value:.2f}')
-                break
+            try:
+                k = int(cuartil)
+                N = sum([float(self.datos_inter.item(i, 3).text()) for i in range(self.datos_inter.rowCount())])
+
+                if N == 0:  # Comprobar si no hay datos
+                    raise ValueError("No hay datos disponibles para calcular el cuartil.")
+
+                posicion = k * N / 4
+                frecuencia_acumulada = 0
+                for i in range(self.datos_inter.rowCount()):
+                    frecuencia_acumulada += float(self.datos_inter.item(i, 3).text())
+                    if frecuencia_acumulada >= posicion:
+                        li = float(self.datos_inter.item(i, 1).text())
+                        fa = frecuencia_acumulada - float(self.datos_inter.item(i, 3).text())
+                        f = float(self.datos_inter.item(i, 3).text()) 
+                        i_width = float(self.datos_inter.item(i, 2).text()) - li 
+                        
+                        cuartil_value = li + ((posicion - fa) * i_width) / f
+                        self.cuartil_resultado.setText(f'El resultado del Cuartil {cuartil} es: {cuartil_value:.2f}')
+                        break  # Termina el ciclo aquí
+            except Exception as e:
+                self.cuartil_resultado.setText("No hay datos para procesar")
 
     def calcular_decil(self):
         decil = self.decil_combo.currentText()
         if decil != 'Seleccionar Decil':
-            k = int(decil)
-            N = sum([float(self.datos_inter.item(i, 3).text()) for i in range(self.datos_inter.rowCount())])
-            
-            posicion = k * N / 10
-            frecuencia_acumulada = 0
-            for i in range(self.datos_inter.rowCount()):
-                frecuencia_acumulada += float(self.datos_inter.item(i, 3).text())
-                if frecuencia_acumulada >= posicion:
-                    li = float(self.datos_inter.item(i, 1).text())
-                    fa = frecuencia_acumulada - float(self.datos_inter.item(i, 3).text())
-                    f = float(self.datos_inter.item(i, 3).text()) 
-                    i_width = float(self.datos_inter.item(i, 2).text()) - li
-                    
-                    decil_value = li + ((posicion - fa) * i_width) / f
-                    self.decil_resultado.setText(f'El resultado del Decil {decil} es: {decil_value:.2f}')
-                    break
+            try:
+                k = int(decil)
+                N = sum([float(self.datos_inter.item(i, 3).text()) for i in range(self.datos_inter.rowCount())])
+
+                if N == 0:  # Comprobar si no hay datos
+                    raise ValueError("No hay datos disponibles para calcular el decil.")
+
+                posicion = k * N / 10
+                frecuencia_acumulada = 0
+                for i in range(self.datos_inter.rowCount()):
+                    frecuencia_acumulada += float(self.datos_inter.item(i, 3).text())
+                    if frecuencia_acumulada >= posicion:
+                        li = float(self.datos_inter.item(i, 1).text())
+                        fa = frecuencia_acumulada - float(self.datos_inter.item(i, 3).text())
+                        f = float(self.datos_inter.item(i, 3).text()) 
+                        i_width = float(self.datos_inter.item(i, 2).text()) - li
+                        
+                        decil_value = li + ((posicion - fa) * i_width) / f
+                        self.decil_resultado.setText(f'El resultado del Decil {decil} es: {decil_value:.2f}')
+                        break
+            except Exception as e:
+                self.decil_resultado.setText("No hay datos para procesar")
 
     def calcular_percentil(self):
-        decil = self.decil_combo.currentText()
-        if decil != 'Seleccionar Decil':
-            k = int(decil)
-            N = sum([float(self.datos_inter.item(i, 3).text()) for i in range(self.datos_inter.rowCount())])  # Total de frecuencias
-            
-            # Encontrar la clase que contiene el decil
-            posicion = k * N / 100
-            frecuencia_acumulada = 0
-            for i in range(self.datos_inter.rowCount()):
-                frecuencia_acumulada += float(self.datos_inter.item(i, 3).text())
-                if frecuencia_acumulada >= posicion:
-                    li = float(self.datos_inter.item(i, 1).text())  # Límite inferior
-                    fa = frecuencia_acumulada - float(self.datos_inter.item(i, 3).text())  # Frecuencia acumulada anterior
-                    f = float(self.datos_inter.item(i, 3).text())  # Frecuencia de la clase
-                    i_width = float(self.datos_inter.item(i, 2).text()) - li  # Ancho del intervalo
-                    
-                    decil_value = li + ((posicion - fa) * i_width) / f
-                    self.percentil_resultado.setText(f'El resultado del percentil {decil} es: {decil_value:.2f}')
-                    break
+        percentil = self.percentil_combo.currentText()
+        if percentil:
+            try:
+                k = int(percentil)
+                N = sum([float(self.datos_inter.item(i, 3).text()) for i in range(self.datos_inter.rowCount())])
+
+                if N == 0:  # Comprobar si no hay datos
+                    raise ValueError("No hay datos disponibles para calcular el percentil.")
+
+                posicion = k * N / 100
+                frecuencia_acumulada = 0
+                for i in range(self.datos_inter.rowCount()):
+                    frecuencia_acumulada += float(self.datos_inter.item(i, 3).text())
+                    if frecuencia_acumulada >= posicion:
+                        li = float(self.datos_inter.item(i, 1).text())
+                        fa = frecuencia_acumulada - float(self.datos_inter.item(i, 3).text())
+                        f = float(self.datos_inter.item(i, 3).text()) 
+                        i_width = float(self.datos_inter.item(i, 2).text()) - li
+                        
+                        percentil_value = li + ((posicion - fa) * i_width) / f
+                        self.percentil_resultado.setText(f'El resultado del Percentil {percentil} es: {percentil_value:.2f}')
+                        break
+            except Exception as e:
+                self.percentil_resultado.setText("No hay datos para procesar")
     
     def center_window(self):
         screen = QGuiApplication.primaryScreen().geometry()
@@ -789,21 +816,24 @@ class Window2(QWidget):
         labels = QVBoxLayout()
         text = QVBoxLayout()
         inputs = QHBoxLayout()
-        
-        labelPeobabilidad = QLabel("Ingrese una probabilidad: ")
+
+        self.canvas = FigureCanvas(plt.Figure())
+        layout.addWidget(self.canvas)
+
+        labelProbabilidad = QLabel("Ingrese una probabilidad: ")
         textProbabilidad = QLineEdit()
         labelMedia = QLabel("Ingrese un valor de media: ")
         textMedia = QLineEdit()
-        labelDesviacion = QLabel("Ingrese una desviaciion")
+        labelDesviacion = QLabel("Ingrese una desviación: ")
         textDesviacion = QLineEdit()
         
         label_resultado = QLabel("El resultado es: ")
         layout.addWidget(label_resultado)
         
-        boton_calcular_normal_Inv = QPushButton("calcular")
+        boton_calcular_normal_Inv = QPushButton("Calcular")
         boton_calcular_normal_Inv.clicked.connect(lambda: self.calcular_Inv(textProbabilidad, textMedia, textDesviacion, label_resultado))
         
-        labels.addWidget(labelPeobabilidad)
+        labels.addWidget(labelProbabilidad)
         labels.addWidget(labelMedia)
         labels.addWidget(labelDesviacion)
         text.addWidget(textProbabilidad)
@@ -822,13 +852,29 @@ class Window2(QWidget):
             media = float(textMedia.text())
             desviacion = float(textDesviacion.text())
 
-            # Cálculo de la inversa de la distribución normal
-            from scipy.stats import norm
             resultado = norm.ppf(probabilidad, loc=media, scale=desviacion)
-
             label_resultado.setText(f"El resultado es: {resultado:.4f}")
+
+            self.graficar_Norm_Inv(media, desviacion, resultado)
+
         except ValueError:
             label_resultado.setText("Ingrese valores válidos")
+
+    def graficar_Norm_Inv(self, media, desviacion, valor_calculado):
+        ax = self.canvas.figure.add_subplot(111)
+        ax.clear()
+
+        x = np.linspace(media - 4 * desviacion, media + 4 * desviacion, 1000)
+        y = norm.pdf(x, loc=media, scale=desviacion)
+
+        ax.plot(x, y)
+        ax.axvline(valor_calculado, color='red', linestyle='--')
+
+        ax.set_title('Distribución Normal')
+        ax.set_xlabel('Valor')
+        ax.set_ylabel('Densidad')
+
+        self.canvas.draw()
         
     def combinaciones(self):
         panel = QWidget()
@@ -896,21 +942,24 @@ class Window2(QWidget):
     def normal(self):
         panel = QWidget()
         layout = QVBoxLayout()
-        
-        layout.addWidget(QLabel("Distribución Normal"))
+        layoutBotones = QHBoxLayout()
 
-        layoutH = QHBoxLayout()
+        self.grafica_widget = QWidget()
+        self.grafica_layout = QVBoxLayout(self.grafica_widget)
+        layout.addWidget(self.grafica_widget)
+        
+        layoutH = QVBoxLayout()
 
         self.resultado_normal = QLabel("")
         layout.addWidget(self.resultado_normal)
         
-        label_layout = QVBoxLayout()
+        label_layout = QHBoxLayout()
         label_layout.addWidget(QLabel("Valor (x):"))
         label_layout.addWidget(QLabel("Media (μ):"))
         label_layout.addWidget(QLabel("Desviación estándar (σ):"))
         label_layout.addWidget(QLabel("Tipo de distribución:"))
         
-        textfield_layout = QVBoxLayout()
+        textfield_layout = QHBoxLayout()
         self.x_input_normal = QLineEdit()
         self.mu_input_normal = QLineEdit()
         self.sigma_input_normal = QLineEdit()
@@ -929,14 +978,53 @@ class Window2(QWidget):
         boton_calcular_normal = QPushButton("Calcular Normal")
         boton_calcular_normal.clicked.connect(self.calcular_normal)
         layout.addLayout(layoutH)
-        layout.addWidget(boton_calcular_normal)
+        layoutBotones.addWidget(boton_calcular_normal)
 
         boton_limpiar_normal = QPushButton("Limpiar")
         boton_limpiar_normal.clicked.connect(self.limpiar_normal)
-        layout.addWidget(boton_limpiar_normal)
+        layoutBotones.addWidget(boton_limpiar_normal)
 
+        layout.addLayout(layoutBotones)
         panel.setLayout(layout)
         return panel
+
+    def graficar_normal(self, mu, sigma, acumulado=False):
+        # Limpiar el layout de la gráfica antes de dibujar una nueva
+        for i in reversed(range(self.grafica_layout.count())): 
+            widget = self.grafica_layout.itemAt(i).widget()
+            if widget is not None:
+                widget.deleteLater()
+        
+        # Crear figura y canvas para la gráfica
+        figura = Figure()
+        canvas = FigureCanvas(figura)
+        self.grafica_layout.addWidget(canvas)
+
+        x = np.linspace(mu - 4 * sigma, mu + 4 * sigma, 1000)
+
+        ax = figura.add_subplot(111)
+
+        if acumulado:
+            y = norm.cdf(x, mu, sigma)
+            ax.set_title('Función de Distribución Acumulativa (CDF)')
+            ax.fill_between(x, y, color='skyblue', alpha=0.5)
+        else:
+            y = norm.pdf(x, mu, sigma)
+            ax.set_title('Función de Densidad de Probabilidad (PDF)')
+            ax.fill_between(x, y, color='skyblue', alpha=0.5)
+
+        ax.plot(x, y, color='blue', label='PDF de la distribución normal')
+        ax.axvline(mu, color='r', linestyle='--', label='Media (μ)')
+        ax.axvline(mu + sigma, color='g', linestyle='--', label='σ')
+        ax.axvline(mu - sigma, color='g', linestyle='--')
+
+        ax.set_xlabel('Valor (x)')
+        ax.set_ylabel('Probabilidad')
+        ax.legend()
+        ax.grid()
+
+        # Dibujar el canvas
+        canvas.draw()
 
     def calcular_normal(self):
         try:
@@ -950,7 +1038,7 @@ class Window2(QWidget):
         acumulado = self.combo_acumulado_normal.currentText() == "Acumulativa"
 
         if self.combo_acumulado_normal.currentText() == "Elija una opción":
-            self.resultado_normal.setText("Por favor seleccione una opción acumulativa o no acumulativa para continuar MARDITO")
+            self.resultado_normal.setText("Por favor seleccione una opción acumulativa o no acumulativa para continuar.")
             return
 
         try:
@@ -959,6 +1047,10 @@ class Window2(QWidget):
                 self.resultado_normal.setText(f"Probabilidad acumulada (CDF): {resultado:.4f}")
             else:
                 self.resultado_normal.setText(f"Densidad normal (PDF): {resultado:.4f}")
+
+            # Llamar a la función para graficar correctamente
+            self.graficar_normal(mu, sigma, acumulado)
+
         except ValueError as e:
             self.resultado_normal.setText(str(e))
 
@@ -972,10 +1064,13 @@ class Window2(QWidget):
     def poisson(self):
         panel = QWidget()
         layout = QVBoxLayout()
-        layoutH = QHBoxLayout()
-        label_layout = QVBoxLayout()
-        textfiel_layout = QVBoxLayout()
-        combo = QHBoxLayout()
+        layoutV = QVBoxLayout()
+        label_layout = QHBoxLayout()
+        textfield_layout = QHBoxLayout()
+
+        self.grafica_widget = QWidget()
+        self.grafica_layout = QVBoxLayout(self.grafica_widget)
+        layout.addWidget(self.grafica_widget)
 
         x = 0
         media = 0
@@ -983,12 +1078,11 @@ class Window2(QWidget):
 
         combo_acumulado = QComboBox()
         combo_acumulado.addItems(["Elija una opción", "Acumulativa", "No acumulativa"])
-        combo.addWidget(QLabel("Tipo de distribución: "))
-        combo.addWidget(combo_acumulado)
+        label_layout.addWidget(QLabel("Tipo de distribución: "))
+        textfield_layout.addWidget(combo_acumulado)
 
         resultado = distriPoison(x, media, acum)
         resultado = round(resultado, 4)
-
         label_resultado = QLabel(f"Resultado Poisson: {resultado}")
 
         label_x = QLabel("Número de éxitos (x): ")
@@ -999,30 +1093,58 @@ class Window2(QWidget):
         label_layout.addWidget(label_x)
         label_layout.addWidget(label_media)
 
-        textfiel_layout.addWidget(x_input)
-        textfiel_layout.addWidget(media_input)
+        textfield_layout.addWidget(x_input)
+        textfield_layout.addWidget(media_input)
 
-        layoutH.addLayout(label_layout)
-        layoutH.addLayout(textfiel_layout)
+        layoutV.addLayout(label_layout)
+        layoutV.addLayout(textfield_layout)
 
-        Botones_layout = QVBoxLayout()
+        botones_layout = QVBoxLayout()
         boton_actualizar = QPushButton("Actualizar")
         boton_limpiar = QPushButton("Limpiar")
 
-        Botones_layout.addWidget(boton_actualizar)
-        Botones_layout.addWidget(boton_limpiar)
+        botones_layout.addWidget(boton_actualizar)
+        botones_layout.addWidget(boton_limpiar)
 
         boton_actualizar.clicked.connect(lambda: self.actualizar_poisson(x_input, media_input, label_resultado, combo_acumulado))
         boton_limpiar.clicked.connect(lambda: self.limpiar_poisson(x_input, media_input, label_resultado, combo_acumulado))
 
         layout.addWidget(label_resultado)
-        layout.addLayout(layoutH)
-        layout.addLayout(combo)
-        layout.addLayout(Botones_layout)
+        layout.addLayout(layoutV)
+        layout.addLayout(botones_layout)
 
         panel.setLayout(layout)
         return panel
+
+    def graficar_poisson(self, media, acumulado=False):
+        for i in reversed(range(self.grafica_layout.count())): 
+            widget = self.grafica_layout.itemAt(i).widget()
+            if widget is not None:
+                widget.deleteLater()
         
+        figura = Figure()
+        canvas = FigureCanvas(figura)
+        self.grafica_layout.addWidget(canvas)
+
+        x = np.arange(0, int(media) + 4 * int(media), 1)
+
+        if acumulado:
+            y = [poisson.cdf(k, media) for k in x]  # CDF
+            ax_title = 'Función de Distribución Acumulativa (CDF) de Poisson'
+        else:
+            y = [poisson.pmf(k, media) for k in x]  # PMF
+            ax_title = 'Función de Densidad de Probabilidad (PMF) de Poisson'
+
+        ax = figura.add_subplot(111)
+        ax.bar(x, y, color='skyblue', alpha=0.5)
+
+        ax.set_title(ax_title)
+        ax.set_xlabel('Número de Éxitos (x)')
+        ax.set_ylabel('Probabilidad')
+        ax.grid()
+
+        canvas.draw()
+
     def actualizar_poisson(self, x_input, media_input, label_resultado, combo_acumulado):
         try:
             x = int(x_input.text())
@@ -1042,6 +1164,9 @@ class Window2(QWidget):
             resultado = distriPoison(x, media, acumulado)
             resultado = round(resultado, 4)
             label_resultado.setText(f"Resultado Poisson: {resultado}")
+
+            self.graficar_poisson(media, acumulado)
+
         except ValueError as e:
             label_resultado.setText(f"Error: {str(e)}")
 
@@ -1054,11 +1179,15 @@ class Window2(QWidget):
     def binomial(self):
         panel = QWidget()
         layout = QVBoxLayout()
+        
+        self.grafica_widget = QWidget()
+        self.grafica_layout = QVBoxLayout(self.grafica_widget)
+        layout.addWidget(self.grafica_widget)
+        
         layoutH = QHBoxLayout()
         combo = QHBoxLayout()
         label_layout = QVBoxLayout()
         textfiel_layout = QVBoxLayout()
-
         n = 0
         k = 0
         p = 0
@@ -1121,7 +1250,7 @@ class Window2(QWidget):
                 label_resultado.setText("Selecciona un valor acumulativo o no acumulativo.")
                 return
             
-            acumulado = combo_acumulado.currentText() == "Acumulativa"
+            acumulado = seleccion == "Acumulativa"
             
             if n < 0 or k < 0 or not (0 <= p <= 1):
                 raise ValueError("Los valores deben ser positivos y 0 <= p <= 1")
@@ -1129,8 +1258,47 @@ class Window2(QWidget):
             resultado = distriBinomial(k, n, p, acumulado)
             resultado = round(resultado, 4)
             label_resultado.setText(f"Resultado Binomial: {resultado}")
+            
+            self.graficar_binomial(n, p, acumulado)
+
         except ValueError as e:
             label_resultado.setText(f"Error: {str(e)}")
+
+    def graficar_binomial(self, n, p, acumulado=False):
+        for i in reversed(range(self.grafica_layout.count())):
+            widget = self.grafica_layout.itemAt(i).widget()
+            if widget is not None:
+                widget.deleteLater()
+
+        figura = Figure()
+        canvas = FigureCanvas(figura)
+        self.grafica_layout.addWidget(canvas)
+
+        if n > 0:
+            x = range(n + 1)
+            ax = figura.add_subplot(111)
+
+            if acumulado:
+                y = [binom.cdf(k, n, p) for k in x]  # CDF
+                ax.set_title('Función de Distribución Acumulativa (CDF)')
+                ax.fill_between(x, y, color='skyblue', alpha=0.5)
+            else:
+                y = [binom.pmf(k, n, p) for k in x]  # PDF
+                ax.set_title('Función de Densidad de Probabilidad (PDF)')
+                ax.bar(x, y, color='skyblue', alpha=0.5)
+
+            ax.set_xlabel('Número de éxitos (k)')
+            ax.set_ylabel('Probabilidad')
+            ax.axhline(0, color='black', lw=1)
+            ax.grid()
+
+        else:
+            ax = figura.add_subplot(111)
+            ax.set_title('No hay datos para graficar')
+            ax.text(0.5, 0.5, 'n debe ser mayor que 0', horizontalalignment='center', verticalalignment='center')
+            ax.axis('off')
+
+        canvas.draw()
         
     def limpiar_binomial(self, n_input, k_input, p_input, label_resultado, combo_acumulado):
         n_input.clear()
@@ -1138,7 +1306,7 @@ class Window2(QWidget):
         p_input.clear()
         combo_acumulado.setCurrentIndex(0)
         label_resultado.setText("")
-   
+
     def change_panel(self, index):
         self.stack.setCurrentIndex(index)
 

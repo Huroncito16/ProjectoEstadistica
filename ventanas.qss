@@ -1,0 +1,65 @@
+QWidget {
+    background-color: #0a0a0a;
+    color: #ffffff;
+}
+
+QPushButton {
+    background-color: #4B0082;
+    color: #ffffff;
+    border-radius: 10px;
+    padding: 8px;
+}
+
+QPushButton:hover {
+    background-color: #9370DB;
+}
+
+QPushButton:pressed {
+    background-color: #6A5ACD;
+}
+
+.Botones_layout {
+    background-color: #0a0a0a;
+}
+
+QScrollBar {
+    background-color: #6A5ACD;
+}
+
+/* Estilos para QTableWidget */
+QTableWidget {
+    background-color: #1c1c1c; /* Fondo de la tabla */
+    color: #ffffff; /* Color del texto */
+    border: 1px solid #4B0082; /* Borde de la tabla */
+    gridline-color: #6A5ACD; /* Color de las líneas divisorias */
+}
+
+/* Estilo del encabezado */
+QHeaderView::section {
+    background-color: #4B0082; /* Color de fondo del encabezado */
+    color: #ffffff; /* Color del texto del encabezado */
+    padding: 4px;
+    border: 1px solid #6A5ACD; /* Borde del encabezado */
+}
+
+/* Colores alternos en las filas */
+QTableWidget::item {
+    background-color: #1c1c1c; /* Color base de las filas */
+    color: #ffffff; /* Color del texto de las filas */
+}
+
+QTableWidget::item:alternate {
+    background-color: #2e2e2e; /* Color alternativo para las filas */
+}
+
+/* Selección de celdas */
+QTableWidget::item:selected {
+    background-color: #6A5ACD; /* Color de fondo al seleccionar una fila */
+    color: #ffffff; /* Color del texto cuando se selecciona */
+}
+
+/* Flecha de ordenamiento en el encabezado */
+QTableWidget::up-arrow, QTableWidget::down-arrow {
+    background-color: #4B0082;
+    color: #ffffff;
+}
