@@ -26,39 +26,34 @@ QScrollBar {
     background-color: #6A5ACD;
 }
 
-/* Estilos para QTableWidget */
 QTableWidget {
-    background-color: #1c1c1c; /* Fondo de la tabla */
-    color: #ffffff; /* Color del texto */
-    border: 1px solid #4B0082; /* Borde de la tabla */
-    gridline-color: #6A5ACD; /* Color de las líneas divisorias */
+    background-color: #1c1c1c;
+    color: #ffffff;
+    border: 1px solid #4B0082;
+    gridline-color: #6A5ACD;
 }
 
-/* Estilo del encabezado */
 QHeaderView::section {
-    background-color: #4B0082; /* Color de fondo del encabezado */
-    color: #ffffff; /* Color del texto del encabezado */
+    background-color: #4B0082;
+    color: #ffffff;
     padding: 4px;
-    border: 1px solid #6A5ACD; /* Borde del encabezado */
+    border: 1px solid #6A5ACD;
 }
 
-/* Colores alternos en las filas */
 QTableWidget::item {
-    background-color: #1c1c1c; /* Color base de las filas */
-    color: #ffffff; /* Color del texto de las filas */
+    background-color: #1c1c1c;
+    color: #ffffff;
 }
 
 QTableWidget::item:alternate {
-    background-color: #2e2e2e; /* Color alternativo para las filas */
+    background-color: #2e2e2e;
 }
 
-/* Selección de celdas */
 QTableWidget::item:selected {
-    background-color: #6A5ACD; /* Color de fondo al seleccionar una fila */
-    color: #ffffff; /* Color del texto cuando se selecciona */
+    background-color: #6A5ACD;
+    color: #ffffff;
 }
 
-/* Flecha de ordenamiento en el encabezado */
 QTableWidget::up-arrow, QTableWidget::down-arrow {
     background-color: #4B0082;
     color: #ffffff;

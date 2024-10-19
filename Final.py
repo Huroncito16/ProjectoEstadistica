@@ -1,10 +1,9 @@
 from datetime import date
 import sys
-from PyQt6.QtWidgets import QDialog, QComboBox, QScrollArea, QSizePolicy, QTableWidget, QTableWidgetItem, QLineEdit, QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFileDialog, QStackedWidget
+from PyQt6.QtWidgets import QDialog, QComboBox, QTableWidget, QTableWidgetItem, QLineEdit, QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFileDialog, QStackedWidget
 from PyQt6.QtCharts import QLineSeries, QChart, QChartView, QBarSeries, QBarSet, QBarCategoryAxis, QValueAxis
 from PyQt6.QtGui import QPainter, QIcon, QPixmap, QGuiApplication
 from PyQt6.QtCore import Qt, QFile, QIODevice, QTextStream
-
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -310,7 +309,6 @@ class Window1(QWidget):
             "f*Xi","d","f*|d|","f*d^2","f*d^3","f*d^4"
         ])
       
-       
         actualizar_button = QPushButton("Actualizar Tabla")
         actualizar_button.clicked.connect(self.actualizar_intervalo)
         abrir_ventana_button = QPushButton('Calcular Cuartiles, Deciles y Percentiles')
@@ -486,21 +484,21 @@ class Window1(QWidget):
         
     def crear_Grafico(self):
         rango = 0
-        media = 1200
-        mediana = 800
-        moda = 600
-        varianza = 500
-        desviacion_estandar = 1300
-        curtosis = 900
-        asimetria = 700
-        error_tipico = 400
-        cuenta = 1000
+        media = 0
+        mediana = 0
+        moda = 0
+        varianza = 0
+        desviacion_estandar = 0
+        curtosis = 0
+        asimetria = 0
+        error_tipico = 0
+        cuenta = 0
 
         panel = QWidget()
         layout = QVBoxLayout()
 
         self.series = QBarSeries()
-        self.bar_set = QBarSet("Pato")
+        self.bar_set = QBarSet("Grafica de estdistica")
         
         self.bar_set.append([rango, media, mediana, moda, varianza, 
                             desviacion_estandar, curtosis, asimetria, 
@@ -517,6 +515,7 @@ class Window1(QWidget):
         axisX.append(["Rango", "Media", "Mediana", "Moda", "Varianza",
                     "Desviación Est.", "Curtosis", "Asimetría", 
                     "Error Típico", "Cuenta"])
+        
         chart.addAxis(axisX, Qt.AlignmentFlag.AlignBottom)
         self.series.attachAxis(axisX)
 
@@ -989,13 +988,11 @@ class Window2(QWidget):
         return panel
 
     def graficar_normal(self, mu, sigma, acumulado=False):
-        # Limpiar el layout de la gráfica antes de dibujar una nueva
         for i in reversed(range(self.grafica_layout.count())): 
             widget = self.grafica_layout.itemAt(i).widget()
             if widget is not None:
                 widget.deleteLater()
         
-        # Crear figura y canvas para la gráfica
         figura = Figure()
         canvas = FigureCanvas(figura)
         self.grafica_layout.addWidget(canvas)
@@ -1023,7 +1020,6 @@ class Window2(QWidget):
         ax.legend()
         ax.grid()
 
-        # Dibujar el canvas
         canvas.draw()
 
     def calcular_normal(self):
@@ -1048,7 +1044,6 @@ class Window2(QWidget):
             else:
                 self.resultado_normal.setText(f"Densidad normal (PDF): {resultado:.4f}")
 
-            # Llamar a la función para graficar correctamente
             self.graficar_normal(mu, sigma, acumulado)
 
         except ValueError as e:
