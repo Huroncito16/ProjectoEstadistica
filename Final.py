@@ -1,9 +1,10 @@
 from datetime import date
 import sys
-from PyQt6.QtWidgets import QDialog, QComboBox, QTableWidget, QTableWidgetItem, QLineEdit, QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFileDialog, QStackedWidget
+from PyQt6.QtWidgets import QDialog, QComboBox, QScrollArea, QSizePolicy, QTableWidget, QTableWidgetItem, QLineEdit, QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFileDialog, QStackedWidget
 from PyQt6.QtCharts import QLineSeries, QChart, QChartView, QBarSeries, QBarSet, QBarCategoryAxis, QValueAxis
-from PyQt6.QtGui import QPainter, QIcon, QPixmap, QGuiApplication
+from PyQt6.QtGui import QPainter, QIcon, QPixmap, QGuiApplication, QBrush, QColor, QFont
 from PyQt6.QtCore import Qt, QFile, QIODevice, QTextStream
+
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -47,10 +48,6 @@ class MenuWindow(QWidget):
         scaled_pixmap = pixmap.scaled(self.image_label.size(), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
         self.image_label.setPixmap(scaled_pixmap)
         layout = QVBoxLayout()
-        #image = QLabel(self)
-        #pixmap = QPixmap("./img/banner3.jpg")
-        #image.setPixmap(pixmap)     
-        #layout.addWidget(image)
 
         self.button_window1 = QPushButton("Analisis Estadisticos")
         self.button_window2 = QPushButton("Combinaciones y Distrubuciones")
@@ -72,7 +69,6 @@ class MenuWindow(QWidget):
         self.image_label.resizeEvent = self.resize_image
 
     def resize_image(self, event):
-        # Escalar la imagen cuando cambie el tamaño del QLabel
         pixmap = QPixmap("./img/banner3.jpg")
         scaled_pixmap = pixmap.scaled(self.image_label.size(), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
         self.image_label.setPixmap(scaled_pixmap)
@@ -216,10 +212,13 @@ class Window1(QWidget):
         
         actualizar_button = QPushButton("Actualizar Tabla")
         actualizar_button.clicked.connect(self.actualizar_tabla_sencilla)
+        abrir_ventana_button = QPushButton('Calcular Cuartiles, Deciles y Percentiles')
+        abrir_ventana_button.clicked.connect(self.abrir_ventana_calculos)
              
         tabla_layout.addWidget(self.table_widget)
         tabla_layout.addWidget(self.table_resul)
         tabla_layout.addWidget(actualizar_button)
+        tabla_layout.addWidget(abrir_ventana_button)
         tabla_panel.setLayout(tabla_layout)
 
         return tabla_panel
@@ -309,6 +308,7 @@ class Window1(QWidget):
             "f*Xi","d","f*|d|","f*d^2","f*d^3","f*d^4"
         ])
       
+       
         actualizar_button = QPushButton("Actualizar Tabla")
         actualizar_button.clicked.connect(self.actualizar_intervalo)
         abrir_ventana_button = QPushButton('Calcular Cuartiles, Deciles y Percentiles')
@@ -396,8 +396,11 @@ class Window1(QWidget):
         panel_resul = QWidget()
         layout = QVBoxLayout()
         layout_Horizontal = QHBoxLayout()
-        panel_label_1 = QVBoxLayout()
-        panel_label = QVBoxLayout()
+
+        panel_label_col1 = QVBoxLayout()
+        panel_text_col1 = QVBoxLayout()
+        panel_label_col2 = QVBoxLayout()
+        panel_text_col2 = QVBoxLayout()
 
         img = QVBoxLayout()
         image = QLabel(self)
@@ -443,21 +446,28 @@ class Window1(QWidget):
 
         self.text_fields = []
 
-        for label_text, _ in self.field_data:
+        # Distribuye los labels y QLineEdits en dos columnas
+        for i, (label_text, field_value) in enumerate(self.field_data):
             label = QLabel(label_text)
-            panel_label_1.addWidget(label)
-
-        for _, field_value in self.field_data:
             text_field = QLineEdit()
             text_field.setText(str(field_value))
             self.text_fields.append(text_field)
-            panel_label.addWidget(text_field)
+
+            if i < len(self.field_data) // 2:
+                panel_label_col1.addWidget(label)
+                panel_text_col1.addWidget(text_field)
+            else:
+                panel_label_col2.addWidget(label)
+                panel_text_col2.addWidget(text_field)
 
         self.update_button = QPushButton("Actualizar")
-        self.update_button.clicked.connect(lambda: self.actualizar_valores())
+        self.update_button.clicked.connect(self.actualizar_valores)
 
-        layout_Horizontal.addLayout(panel_label_1)
-        layout_Horizontal.addLayout(panel_label)
+        # Agrega los layouts de columnas al layout horizontal
+        layout_Horizontal.addLayout(panel_label_col1)
+        layout_Horizontal.addLayout(panel_text_col1)
+        layout_Horizontal.addLayout(panel_label_col2)
+        layout_Horizontal.addLayout(panel_text_col2)
 
         layout.addLayout(img)
         layout.addLayout(layout_Horizontal)
@@ -471,74 +481,64 @@ class Window1(QWidget):
         if self.saved_file_path:
             datos = leerDatos(self.saved_file_path)
             resultados = listas(datos)
-            
+
             nuevos_valores = [
                 resultados['valor_minimo'], resultados['valor_maximo'], resultados['rango'], 
                 resultados['media'], resultados['mediana'], resultados['moda'], resultados['varianza'], 
                 resultados['desviacion_estandar'], resultados['curtosis'], resultados['asimetria'], 
                 resultados['error_tipico'], resultados['suma'], resultados['cuenta']
             ]
-            
+
             for i, new_value in enumerate(nuevos_valores):
                 self.text_fields[i].setText(str(new_value))
         
     def crear_Grafico(self):
         rango = 0
-        media = 0
-        mediana = 0
-        moda = 0
-        varianza = 0
-        desviacion_estandar = 0
-        curtosis = 0
-        asimetria = 0
-        error_tipico = 0
-        cuenta = 0
+        media = 1200
+        mediana = 800
+        moda = 600
+        varianza = 500
+        desviacion_estandar = 1300
+        curtosis = 900
+        asimetria = 700
+        error_tipico = 400
+        cuenta = 1000
 
         panel = QWidget()
         layout = QVBoxLayout()
 
         self.series = QBarSeries()
-        self.bar_set = QBarSet("Grafica de estdistica")
-        
-        self.bar_set.append([rango, media, mediana, moda, varianza, 
-                            desviacion_estandar, curtosis, asimetria, 
-                            error_tipico, cuenta])
-        
+        self.bar_set = QBarSet("Pato")
+        self.bar_set.setBrush(QBrush(QColor("#2b0063"))) 
+        self.bar_set.append([rango, media, mediana, moda, varianza, desviacion_estandar, curtosis, asimetria, error_tipico, cuenta])
         self.series.append(self.bar_set)
 
         chart = QChart()
         chart.addSeries(self.series)
         chart.setTitle("Gráfico de Barras con Línea Conectada")
-        chart.setAnimationOptions(QChart.AnimationOption.SeriesAnimations)
+        chart.setBackgroundBrush(QBrush(QColor("#1b1b1b"))) 
+        chart.setTitleFont(QFont("Arial", 16, QFont.Weight.Bold))
+        chart.setTitleBrush(QBrush(QColor("#fff")))
 
         axisX = QBarCategoryAxis()
-        axisX.append(["Rango", "Media", "Mediana", "Moda", "Varianza",
-                    "Desviación Est.", "Curtosis", "Asimetría", 
-                    "Error Típico", "Cuenta"])
-        
+        axisX.append(["Rango", "Media", "Mediana", "Moda", "Varianza", "Desviación Est.", "Curtosis", "Asimetría", "Error Típico", "Cuenta"])
+        axisX.setLabelsFont(QFont("Arial", 8, QFont.Weight.Bold))
+        axisX.setLabelsBrush(QBrush(QColor("#ffffff")))
         chart.addAxis(axisX, Qt.AlignmentFlag.AlignBottom)
         self.series.attachAxis(axisX)
 
         axisY = QValueAxis()
         axisY.setRange(0, 1600)
+        axisY.setLabelsFont(QFont("Arial", 8, QFont.Weight.Bold))
+        axisY.setLabelsBrush(QBrush(QColor("#ffffff")))
         chart.addAxis(axisY, Qt.AlignmentFlag.AlignLeft)
         self.series.attachAxis(axisY)
 
         self.line_series = QLineSeries()
-        
-        self.line_series.append(0, rango)
-        self.line_series.append(1, media)
-        self.line_series.append(2, mediana)
-        self.line_series.append(3, moda)
-        self.line_series.append(4, varianza)
-        self.line_series.append(5, desviacion_estandar)
-        self.line_series.append(6, curtosis)
-        self.line_series.append(7, asimetria)
-        self.line_series.append(8, error_tipico)
-        self.line_series.append(9, cuenta)
-
+        self.line_series.setColor(QColor("#6100e0"))
+        for i, value in enumerate([rango, media, mediana, moda, varianza, desviacion_estandar, curtosis, asimetria, error_tipico, cuenta]):
+            self.line_series.append(i, value)
         chart.addSeries(self.line_series)
-
         self.line_series.attachAxis(axisX)
         self.line_series.attachAxis(axisY)
 
@@ -794,7 +794,7 @@ class Window2(QWidget):
         self.stack.addWidget(self.normalInv())
         self.stack.addWidget(self.normal())
         self.stack.addWidget(self.binomial())
-        self.stack.addWidget(self.poisson())
+        self.stack.addWidget(self.poisson_panel())
 
         self.buttons["Boton_Panel1"].clicked.connect(lambda: self.change_panel(0))
         self.buttons["Boton_Panel2"].clicked.connect(lambda: self.change_panel(1))
@@ -812,67 +812,91 @@ class Window2(QWidget):
     def normalInv(self):
         panel = QWidget()
         layout = QVBoxLayout()
-        labels = QVBoxLayout()
-        text = QVBoxLayout()
-        inputs = QHBoxLayout()
-
+        labels = QHBoxLayout()
+        text = QHBoxLayout()
+        inputs = QVBoxLayout()
+        botones = QHBoxLayout()
         self.canvas = FigureCanvas(plt.Figure())
         layout.addWidget(self.canvas)
 
-        labelProbabilidad = QLabel("Ingrese una probabilidad: ")
-        textProbabilidad = QLineEdit()
-        labelMedia = QLabel("Ingrese un valor de media: ")
-        textMedia = QLineEdit()
-        labelDesviacion = QLabel("Ingrese una desviación: ")
-        textDesviacion = QLineEdit()
+        labelMedia = QLabel("Media (μ):")
+        self.textMedia = QLineEdit(" ")
+        labelDesviacion = QLabel("Desviación Estándar (σ):")
+        self.textDesviacion = QLineEdit(" ")
+        labelRango = QLabel("Rango (± alrededor de μ):")
+        self.textRango = QLineEdit(" ")
         
-        label_resultado = QLabel("El resultado es: ")
-        layout.addWidget(label_resultado)
+        self.label_resultado = QLabel("Probabilidad dentro del rango: ")
+        layout.addWidget(self.label_resultado)
         
-        boton_calcular_normal_Inv = QPushButton("Calcular")
-        boton_calcular_normal_Inv.clicked.connect(lambda: self.calcular_Inv(textProbabilidad, textMedia, textDesviacion, label_resultado))
+        boton_calcular = QPushButton("Calcular")
+        boton_calcular.clicked.connect(self.calcular_Inv)
         
-        labels.addWidget(labelProbabilidad)
+        boton_limpiar = QPushButton("Limpiar")
+        boton_limpiar.clicked.connect(self.limpiar_campos)
+
         labels.addWidget(labelMedia)
         labels.addWidget(labelDesviacion)
-        text.addWidget(textProbabilidad)
-        text.addWidget(textMedia)
-        text.addWidget(textDesviacion)
+        labels.addWidget(labelRango)
+        text.addWidget(self.textMedia)
+        text.addWidget(self.textDesviacion)
+        text.addWidget(self.textRango)
         inputs.addLayout(labels)
         inputs.addLayout(text)
+        
         layout.addLayout(inputs)
-        layout.addWidget(boton_calcular_normal_Inv)
+        botones.addWidget(boton_calcular)
+        botones.addWidget(boton_limpiar)
+        layout.addLayout(botones)
+        
         panel.setLayout(layout)
         return panel
-        
-    def calcular_Inv(self, textProbabilidad, textMedia, textDesviacion, label_resultado):
+
+    def calcular_Inv(self):
         try:
-            probabilidad = float(textProbabilidad.text())
-            media = float(textMedia.text())
-            desviacion = float(textDesviacion.text())
+            media = float(self.textMedia.text())
+            desviacion = float(self.textDesviacion.text())
+            rango = float(self.textRango.text())
+            lim_inferior = media - rango
+            lim_superior = media + rango
 
-            resultado = norm.ppf(probabilidad, loc=media, scale=desviacion)
-            label_resultado.setText(f"El resultado es: {resultado:.4f}")
+            probabilidad = norm.cdf(lim_superior, loc=media, scale=desviacion) - norm.cdf(lim_inferior, loc=media, scale=desviacion)
+            self.label_resultado.setText(f"Probabilidad dentro del rango: {probabilidad:.4f}")
 
-            self.graficar_Norm_Inv(media, desviacion, resultado)
+            self.graficar_Norm_Inv(media, desviacion, lim_inferior, lim_superior)
 
         except ValueError:
-            label_resultado.setText("Ingrese valores válidos")
+            self.label_resultado.setText("Ingrese valores válidos")
 
-    def graficar_Norm_Inv(self, media, desviacion, valor_calculado):
+    def graficar_Norm_Inv(self, media, desviacion, lim_inferior, lim_superior):
         ax = self.canvas.figure.add_subplot(111)
         ax.clear()
 
         x = np.linspace(media - 4 * desviacion, media + 4 * desviacion, 1000)
         y = norm.pdf(x, loc=media, scale=desviacion)
 
-        ax.plot(x, y)
-        ax.axvline(valor_calculado, color='red', linestyle='--')
+        ax.plot(x, y, label="Distribución Normal")
+        x_fill = np.linspace(lim_inferior, lim_superior, 1000)
+        y_fill = norm.pdf(x_fill, loc=media, scale=desviacion)
+        ax.fill_between(x_fill, y_fill, color="skyblue", alpha=0.4)
+
+        ax.axvline(lim_inferior, color='orange', linestyle='--', label="Límite Inferior")
+        ax.axvline(lim_superior, color='orange', linestyle='--', label="Límite Superior")
 
         ax.set_title('Distribución Normal')
         ax.set_xlabel('Valor')
         ax.set_ylabel('Densidad')
+        ax.legend()
+        ax.grid()
 
+        self.canvas.draw()
+
+    def limpiar_campos(self):
+        self.textMedia.setText(" ")
+        self.textDesviacion.setText(" ")
+        self.textRango.setText(" ")
+        self.label_resultado.setText("Probabilidad dentro del rango: ")
+        self.canvas.figure.clear()
         self.canvas.draw()
         
     def combinaciones(self):
@@ -943,26 +967,25 @@ class Window2(QWidget):
         layout = QVBoxLayout()
         layoutBotones = QHBoxLayout()
 
-        self.grafica_widget = QWidget()
-        self.grafica_layout = QVBoxLayout(self.grafica_widget)
-        layout.addWidget(self.grafica_widget)
-        
+        self.grafica_layout = QVBoxLayout()
+        layout.addLayout(self.grafica_layout)
+
         layoutH = QVBoxLayout()
 
         self.resultado_normal = QLabel("")
         layout.addWidget(self.resultado_normal)
-        
+
         label_layout = QHBoxLayout()
         label_layout.addWidget(QLabel("Valor (x):"))
         label_layout.addWidget(QLabel("Media (μ):"))
         label_layout.addWidget(QLabel("Desviación estándar (σ):"))
         label_layout.addWidget(QLabel("Tipo de distribución:"))
-        
+
         textfield_layout = QHBoxLayout()
         self.x_input_normal = QLineEdit()
         self.mu_input_normal = QLineEdit()
         self.sigma_input_normal = QLineEdit()
-        
+
         textfield_layout.addWidget(self.x_input_normal)
         textfield_layout.addWidget(self.mu_input_normal)
         textfield_layout.addWidget(self.sigma_input_normal)
@@ -973,7 +996,7 @@ class Window2(QWidget):
 
         layoutH.addLayout(label_layout)
         layoutH.addLayout(textfield_layout)
-        
+
         boton_calcular_normal = QPushButton("Calcular Normal")
         boton_calcular_normal.clicked.connect(self.calcular_normal)
         layout.addLayout(layoutH)
@@ -988,17 +1011,16 @@ class Window2(QWidget):
         return panel
 
     def graficar_normal(self, mu, sigma, acumulado=False):
-        for i in reversed(range(self.grafica_layout.count())): 
+        for i in reversed(range(self.grafica_layout.count())):
             widget = self.grafica_layout.itemAt(i).widget()
             if widget is not None:
                 widget.deleteLater()
-        
+
         figura = Figure()
         canvas = FigureCanvas(figura)
-        self.grafica_layout.addWidget(canvas)
+        self.grafica_layout.addWidget(canvas) 
 
         x = np.linspace(mu - 4 * sigma, mu + 4 * sigma, 1000)
-
         ax = figura.add_subplot(111)
 
         if acumulado:
@@ -1010,7 +1032,7 @@ class Window2(QWidget):
             ax.set_title('Función de Densidad de Probabilidad (PDF)')
             ax.fill_between(x, y, color='skyblue', alpha=0.5)
 
-        ax.plot(x, y, color='blue', label='PDF de la distribución normal')
+        ax.plot(x, y, color='blue', label='Distribución normal')
         ax.axvline(mu, color='r', linestyle='--', label='Media (μ)')
         ax.axvline(mu + sigma, color='g', linestyle='--', label='σ')
         ax.axvline(mu - sigma, color='g', linestyle='--')
@@ -1038,10 +1060,11 @@ class Window2(QWidget):
             return
 
         try:
-            resultado = distriNormal(x, mu, sigma, acumulado)
             if acumulado:
+                resultado = norm.cdf(x, mu, sigma)
                 self.resultado_normal.setText(f"Probabilidad acumulada (CDF): {resultado:.4f}")
             else:
+                resultado = norm.pdf(x, mu, sigma)
                 self.resultado_normal.setText(f"Densidad normal (PDF): {resultado:.4f}")
 
             self.graficar_normal(mu, sigma, acumulado)
@@ -1056,7 +1079,12 @@ class Window2(QWidget):
         self.combo_acumulado_normal.setCurrentIndex(0)
         self.resultado_normal.clear()
 
-    def poisson(self):
+        for i in reversed(range(self.grafica_layout.count())):
+            widget = self.grafica_layout.itemAt(i).widget()
+            if widget is not None:
+                widget.deleteLater()
+
+    def poisson_panel(self):
         panel = QWidget()
         layout = QVBoxLayout()
         layoutV = QVBoxLayout()
@@ -1067,34 +1095,28 @@ class Window2(QWidget):
         self.grafica_layout = QVBoxLayout(self.grafica_widget)
         layout.addWidget(self.grafica_widget)
 
-        x = 0
-        media = 0
-        acum = True
-
         combo_acumulado = QComboBox()
         combo_acumulado.addItems(["Elija una opción", "Acumulativa", "No acumulativa"])
         label_layout.addWidget(QLabel("Tipo de distribución: "))
         textfield_layout.addWidget(combo_acumulado)
-
-        resultado = distriPoison(x, media, acum)
-        resultado = round(resultado, 4)
-        label_resultado = QLabel(f"Resultado Poisson: {resultado}")
 
         label_x = QLabel("Número de éxitos (x): ")
         x_input = QLineEdit()
         label_media = QLabel("Media (λ): ")
         media_input = QLineEdit()
 
+        label_resultado = QLabel("Resultado Poisson:")
+        layout.addWidget(label_resultado)
+
         label_layout.addWidget(label_x)
         label_layout.addWidget(label_media)
-
         textfield_layout.addWidget(x_input)
         textfield_layout.addWidget(media_input)
 
         layoutV.addLayout(label_layout)
         layoutV.addLayout(textfield_layout)
 
-        botones_layout = QVBoxLayout()
+        botones_layout = QHBoxLayout()
         boton_actualizar = QPushButton("Actualizar")
         boton_limpiar = QPushButton("Limpiar")
 
@@ -1104,15 +1126,14 @@ class Window2(QWidget):
         boton_actualizar.clicked.connect(lambda: self.actualizar_poisson(x_input, media_input, label_resultado, combo_acumulado))
         boton_limpiar.clicked.connect(lambda: self.limpiar_poisson(x_input, media_input, label_resultado, combo_acumulado))
 
-        layout.addWidget(label_resultado)
         layout.addLayout(layoutV)
         layout.addLayout(botones_layout)
 
         panel.setLayout(layout)
         return panel
 
-    def graficar_poisson(self, media, acumulado=False):
-        for i in reversed(range(self.grafica_layout.count())): 
+    def graficar_poisson(self, media):
+        for i in reversed(range(self.grafica_layout.count())):
             widget = self.grafica_layout.itemAt(i).widget()
             if widget is not None:
                 widget.deleteLater()
@@ -1122,18 +1143,12 @@ class Window2(QWidget):
         self.grafica_layout.addWidget(canvas)
 
         x = np.arange(0, int(media) + 4 * int(media), 1)
-
-        if acumulado:
-            y = [poisson.cdf(k, media) for k in x]  # CDF
-            ax_title = 'Función de Distribución Acumulativa (CDF) de Poisson'
-        else:
-            y = [poisson.pmf(k, media) for k in x]  # PMF
-            ax_title = 'Función de Densidad de Probabilidad (PMF) de Poisson'
+        y = [poisson.pmf(k, media) for k in x]
 
         ax = figura.add_subplot(111)
         ax.bar(x, y, color='skyblue', alpha=0.5)
 
-        ax.set_title(ax_title)
+        ax.set_title('Función de Densidad de Probabilidad (PMF) de Poisson')
         ax.set_xlabel('Número de Éxitos (x)')
         ax.set_ylabel('Probabilidad')
         ax.grid()
@@ -1144,23 +1159,20 @@ class Window2(QWidget):
         try:
             x = int(x_input.text())
             media = float(media_input.text())
-            
             seleccion = combo_acumulado.currentText()
 
             if seleccion == "Elija una opción":
-                label_resultado.setText("Selecciona un valor acumulativo o no acumulativo.")
+                label_resultado.setText("Seleccione una opción: acumulativa o no acumulativa.")
                 return  
-
             acumulado = seleccion == "Acumulativa"
-
-            if x < 0 or media < 0:
+            if x < 0 or media <= 0:
                 raise ValueError("Los valores deben ser positivos")
 
             resultado = distriPoison(x, media, acumulado)
             resultado = round(resultado, 4)
             label_resultado.setText(f"Resultado Poisson: {resultado}")
 
-            self.graficar_poisson(media, acumulado)
+            self.graficar_poisson(media)
 
         except ValueError as e:
             label_resultado.setText(f"Error: {str(e)}")
@@ -1170,32 +1182,27 @@ class Window2(QWidget):
         media_input.clear()
         combo_acumulado.setCurrentIndex(0)
         label_resultado.setText("")
+        for i in reversed(range(self.grafica_layout.count())):
+            widget = self.grafica_layout.itemAt(i).widget()
+            if widget is not None:
+                widget.deleteLater()
         
     def binomial(self):
         panel = QWidget()
         layout = QVBoxLayout()
-        
-        self.grafica_widget = QWidget()
-        self.grafica_layout = QVBoxLayout(self.grafica_widget)
-        layout.addWidget(self.grafica_widget)
-        
-        layoutH = QHBoxLayout()
-        combo = QHBoxLayout()
-        label_layout = QVBoxLayout()
-        textfiel_layout = QVBoxLayout()
-        n = 0
-        k = 0
-        p = 0
-        acum = True
+
+        layoutV = QVBoxLayout()
+        label_layout = QHBoxLayout()
+        textfiel_layout = QHBoxLayout()
+
+        figura = Figure()
+        canvas = FigureCanvas(figura)
+        layout.addWidget(canvas)
 
         combo_acumulado = QComboBox()
         combo_acumulado.addItems(["Elija una opción", "Acumulativa", "No acumulativa"])
 
-        resultado = distriBinomial(k, n, p, acum)
-        resultado = round(resultado, 4)
-
-        label_resultado = QLabel(f"Resultado Binomial: {resultado}")
-        
+        label_resultado = QLabel("Resultado Binomial: ")
         label_n = QLabel("Número de ensayos (n): ")
         n_input = QLineEdit()
         label_k = QLabel("Número de éxitos (K): ")
@@ -1206,35 +1213,33 @@ class Window2(QWidget):
         label_layout.addWidget(label_n)
         label_layout.addWidget(label_k)
         label_layout.addWidget(label_p)
-        combo.addWidget(QLabel("Tipo de distribución: "))
-        combo.addWidget(combo_acumulado)
-        
+        label_layout.addWidget(QLabel("Tipo de distribución: "))
         textfiel_layout.addWidget(n_input)
         textfiel_layout.addWidget(k_input)
         textfiel_layout.addWidget(p_input)
+        textfiel_layout.addWidget(combo_acumulado)
 
-        layoutH.addLayout(label_layout)
-        layoutH.addLayout(textfiel_layout)
+        layoutV.addLayout(label_layout)
+        layoutV.addLayout(textfiel_layout)
 
-        Botones_layout = QVBoxLayout()
+        Botones_layout = QHBoxLayout()
         boton_actualizar = QPushButton("Actualizar")
         boton_limpiar = QPushButton("Limpiar")
 
         Botones_layout.addWidget(boton_actualizar)
         Botones_layout.addWidget(boton_limpiar)
 
-        boton_actualizar.clicked.connect(lambda: self.actualizar_binomial(n_input, k_input, p_input, label_resultado, combo_acumulado))
-        boton_limpiar.clicked.connect(lambda: self.limpiar_binomial(n_input, k_input, p_input, label_resultado, combo_acumulado))
+        boton_actualizar.clicked.connect(lambda: self.actualizar_binomial(n_input, k_input, p_input, label_resultado, combo_acumulado, canvas))
+        boton_limpiar.clicked.connect(lambda: self.limpiar_binomial(n_input, k_input, p_input, label_resultado, combo_acumulado, canvas))
 
         layout.addWidget(label_resultado)
-        layout.addLayout(layoutH)
-        layout.addLayout(combo)
+        layout.addLayout(layoutV)
         layout.addLayout(Botones_layout)
 
         panel.setLayout(layout)
         return panel
 
-    def actualizar_binomial(self, n_input, k_input, p_input, label_resultado, combo_acumulado):
+    def actualizar_binomial(self, n_input, k_input, p_input, label_resultado, combo_acumulado, canvas):
         try:
             n = int(n_input.text())
             k = int(k_input.text())
@@ -1246,7 +1251,6 @@ class Window2(QWidget):
                 return
             
             acumulado = seleccion == "Acumulativa"
-            
             if n < 0 or k < 0 or not (0 <= p <= 1):
                 raise ValueError("Los valores deben ser positivos y 0 <= p <= 1")
 
@@ -1254,53 +1258,43 @@ class Window2(QWidget):
             resultado = round(resultado, 4)
             label_resultado.setText(f"Resultado Binomial: {resultado}")
             
-            self.graficar_binomial(n, p, acumulado)
+            self.graficar_en_canvas(n, p, acumulado, canvas)
 
         except ValueError as e:
             label_resultado.setText(f"Error: {str(e)}")
 
-    def graficar_binomial(self, n, p, acumulado=False):
-        for i in reversed(range(self.grafica_layout.count())):
-            widget = self.grafica_layout.itemAt(i).widget()
-            if widget is not None:
-                widget.deleteLater()
-
-        figura = Figure()
-        canvas = FigureCanvas(figura)
-        self.grafica_layout.addWidget(canvas)
+    def graficar_en_canvas(self, n, p, acumulado, canvas):
+        canvas.figure.clf()
 
         if n > 0:
             x = range(n + 1)
-            ax = figura.add_subplot(111)
+            ax = canvas.figure.add_subplot(111)
 
-            if acumulado:
-                y = [binom.cdf(k, n, p) for k in x]  # CDF
-                ax.set_title('Función de Distribución Acumulativa (CDF)')
-                ax.fill_between(x, y, color='skyblue', alpha=0.5)
-            else:
-                y = [binom.pmf(k, n, p) for k in x]  # PDF
-                ax.set_title('Función de Densidad de Probabilidad (PDF)')
-                ax.bar(x, y, color='skyblue', alpha=0.5)
+            y = [binom.pmf(k, n, p) for k in x]
+            ax.set_title('Función de Densidad de Probabilidad (PDF)')
+            ax.bar(x, y, color='skyblue', alpha=0.5)
 
             ax.set_xlabel('Número de éxitos (k)')
             ax.set_ylabel('Probabilidad')
             ax.axhline(0, color='black', lw=1)
             ax.grid()
-
         else:
-            ax = figura.add_subplot(111)
+            ax = canvas.figure.add_subplot(111)
             ax.set_title('No hay datos para graficar')
             ax.text(0.5, 0.5, 'n debe ser mayor que 0', horizontalalignment='center', verticalalignment='center')
             ax.axis('off')
 
         canvas.draw()
-        
-    def limpiar_binomial(self, n_input, k_input, p_input, label_resultado, combo_acumulado):
+
+    def limpiar_binomial(self, n_input, k_input, p_input, label_resultado, combo_acumulado, canvas):
         n_input.clear()
         k_input.clear()
         p_input.clear()
         combo_acumulado.setCurrentIndex(0)
         label_resultado.setText("")
+
+        canvas.figure.clf()
+        canvas.draw()
 
     def change_panel(self, index):
         self.stack.setCurrentIndex(index)

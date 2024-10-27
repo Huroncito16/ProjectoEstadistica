@@ -58,3 +58,25 @@ QTableWidget::up-arrow, QTableWidget::down-arrow {
     background-color: #4B0082;
     color: #ffffff;
 }
+
+QLineEdit {
+    border: none;
+    border-bottom: 2px solid #4B0082;
+    background-color: #0e0e0e;
+    border-radius: 10px;
+    padding: 5px;
+    font-size: 14px;
+    color: #ffffff;
+    padding-top: 3px;
+}
+
+QLineEdit:hover {
+    border-bottom: 2px solid #6A0DAD;
+    background-color: #2f003d;
+
+}
+
+QLineEdit:focus {
+    border-bottom: 2px solid #8A2BE2;
+    background-color: #111111;
+}
