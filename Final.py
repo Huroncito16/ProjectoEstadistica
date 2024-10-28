@@ -129,12 +129,11 @@ class Window1(QWidget):
         file_dialog_panel = QWidget()
         file_dialog_layout = QVBoxLayout()
 
-        img = QHBoxLayout()
-        image = QLabel(self)
-        pixmap = QPixmap("./img/banner_Open_Dialogo.jpg")
-        image.setPixmap(pixmap)
-        image.setMaximumSize(800,400)
-        img.addWidget(image)
+        banner_layout = QHBoxLayout()
+        banner = QLabel()
+        pixmap = QPixmap("./img/banner2.jpg")
+        banner.setPixmap(pixmap.scaled(800, 600))
+        banner_layout.addWidget(banner)
 
         file_dialog_button = QPushButton("Seleccionar Archivo")
         file_dialog_button.clicked.connect(self.open_and_display_file)
@@ -142,7 +141,7 @@ class Window1(QWidget):
         guardar_button = QPushButton("Guardar")
         guardar_button.clicked.connect(self.guardar_direccion)
 
-        file_dialog_layout.addWidget(image)
+        file_dialog_layout.addLayout(banner_layout)
         file_dialog_layout.addWidget(self.file_textfield)
         file_dialog_layout.addWidget(file_dialog_button)
         file_dialog_layout.addWidget(guardar_button)
@@ -494,15 +493,15 @@ class Window1(QWidget):
         
     def crear_Grafico(self):
         rango = 0
-        media = 1200
-        mediana = 800
-        moda = 600
-        varianza = 500
-        desviacion_estandar = 1300
-        curtosis = 900
-        asimetria = 700
-        error_tipico = 400
-        cuenta = 1000
+        media = 0
+        mediana = 0
+        moda = 0
+        varianza = 0
+        desviacion_estandar = 0
+        curtosis = 0
+        asimetria = 0
+        error_tipico = 0
+        cuenta = 0
 
         panel = QWidget()
         layout = QVBoxLayout()
@@ -769,7 +768,7 @@ class Window2(QWidget):
         self.previous_window = previous_window
         self.setWindowTitle("Ventana 2")
         self.setMaximumSize(1000, 600)
-        self.setMinimumSize(800, 400)
+        self.setMinimumSize(950, 500)
         self.setGeometry(100, 100, 800, 400)
         self.setWindowIcon(QIcon("./img/logo.png"))
 
@@ -808,7 +807,145 @@ class Window2(QWidget):
         self.setLayout(main_layout)
 
         self.apply_stylesheet()
+
+    def combinaciones(self):
+        panel = QWidget()
+        main_layout = QVBoxLayout()
+
+        banner_layout = QHBoxLayout()
+        banner = QLabel()
+        pixmap = QPixmap("./img/banner4.jpg")
+        banner.setPixmap(pixmap.scaled(800, 250))
+        banner_layout.addWidget(banner)
+
+        main_layout.addLayout(banner_layout)
+
+        content_layout = QHBoxLayout()
         
+        layout1 = QVBoxLayout()
+        combo1 = QComboBox()
+        combo1.addItem("Combinaciones sin repetición")
+        combo1.addItem("Combinaciones con repetición")
+        label_n1 = QLabel("Valor de n:")
+        n_input1 = QLineEdit()
+        label_r1 = QLabel("Valor de r:")
+        r_input1 = QLineEdit()
+        boton_calcular1 = QPushButton("Calcular")
+        boton_limpiar1 = QPushButton("Limpiar")
+        label_resultado1 = QLabel("Resultado: ")
+        title2 = QLabel("Conbinaciones")
+
+        title2.setFont(QFont("Arial",8))
+
+        layout1.addWidget(title2)
+        layout1.addWidget(label_resultado1)
+        n1 = QHBoxLayout()
+        n1.addWidget(label_n1)
+        n1.addWidget(n_input1)
+        layout1.addLayout(n1)
+        r1 = QHBoxLayout()
+        r1.addWidget(label_r1)
+        r1.addWidget(r_input1)
+        layout1.addLayout(r1)
+        layout1.addWidget(combo1)
+        layout1.addWidget(boton_calcular1)
+        layout1.addWidget(boton_limpiar1)
+        
+        boton_calcular1.clicked.connect(lambda: self.calcular_combinaciones(n_input1, r_input1, label_resultado1, combo1))
+        boton_limpiar1.clicked.connect(lambda: self.limpiar_Combinacion(n_input1, r_input1, label_resultado1))
+
+        layout2 = QVBoxLayout()
+        combo2 = QComboBox()
+        combo2.addItem("Permutaciones sin repetición")
+        combo2.addItem("Permutaciones con repetición")
+        label_n2 = QLabel("Valor de n:")
+        n_input2 = QLineEdit()
+        label_r2 = QLabel("Valor de r:")
+        r_input2 = QLineEdit()
+        boton_calcular2 = QPushButton("Calcular")
+        boton_limpiar2 = QPushButton("Limpiar")
+        label_resultado2 = QLabel("Resultado: ")
+        title2 = QLabel("Permutaciones")
+
+        layout2.addWidget(title2)
+        layout2.addWidget(label_resultado2)
+        n2 = QHBoxLayout()
+        n2.addWidget(label_n2)
+        n2.addWidget(n_input2)
+        layout2.addLayout(n2)
+        r2 = QHBoxLayout()
+        r2.addWidget(label_r2)
+        r2.addWidget(r_input2)
+        layout2.addLayout(r2)
+        layout2.addWidget(combo2)
+        layout2.addWidget(boton_calcular2)
+        layout2.addWidget(boton_limpiar2)
+        
+        boton_calcular2.clicked.connect(lambda: self.calcular_combinaciones(n_input2, r_input2, label_resultado2, combo2))
+        boton_limpiar2.clicked.connect(lambda: self.limpiar_Combinacion(n_input2, r_input2, label_resultado2))
+
+        layout3 = QVBoxLayout()
+        combo3 = QComboBox()
+        combo3.addItem("Permutaciones sin repetición (n!)")
+        combo3.addItem("Permutaciones circulares")
+        label_n3 = QLabel("Valor de n:")
+        n_input3 = QLineEdit()
+        boton_calcular3 = QPushButton("Calcular")
+        boton_limpiar3 = QPushButton("Limpiar")
+        label_resultado3 = QLabel("Resultado: ")
+        title3 = QLabel("Permutacion")
+
+        layout3.addWidget(title3)
+        layout3.addWidget(label_resultado3)
+        n3 = QHBoxLayout()
+        n3.addWidget(label_n3)
+        n3.addWidget(n_input3)
+        layout3.addLayout(n3)
+        layout3.addWidget(combo3)
+        layout3.addWidget(boton_calcular3)
+        layout3.addWidget(boton_limpiar3)
+        
+        boton_calcular3.clicked.connect(lambda: self.calcular_combinaciones(n_input3, None, label_resultado3, combo3))
+        boton_limpiar3.clicked.connect(lambda: self.limpiar_Combinacion(n_input3, None, label_resultado3))
+
+        content_layout.addLayout(layout1)
+        content_layout.addLayout(layout2)
+        content_layout.addLayout(layout3)
+
+        main_layout.addLayout(content_layout)
+        panel.setLayout(main_layout)
+        
+        return panel
+
+    def calcular_combinaciones(self, n_input, r_input, label_resultado, combo):
+        try:
+            n = int(n_input.text())
+            r = int(r_input.text()) if r_input else None
+
+            tipo = combo.currentText()
+            if tipo == "Combinaciones sin repetición":
+                res = combSinRep(n, r)
+            elif tipo == "Combinaciones con repetición":
+                res = combConRep(n, r)
+            elif tipo == "Permutaciones sin repetición":
+                res = perSinRep(n, r)
+            elif tipo == "Permutaciones con repetición":
+                res = perConRep(n, r)
+            elif tipo == "Permutaciones sin repetición (n!)":
+                res = perSinRepAll(n)
+            elif tipo == "Permutaciones circulares":
+                res = perCir(n)
+
+            label_resultado.setText(f"Resultado: {round(res, 4)}")
+        except ValueError:
+            label_resultado.setText("Por favor, ingresa valores válidos para n y r.")
+
+    def limpiar_Combinacion(self, n_input, r_input, label_resultado):
+        n_input.clear()
+        if r_input:
+            r_input.clear()
+        label_resultado.setText("Resultado: ")
+
     def normalInv(self):
         panel = QWidget()
         layout = QVBoxLayout()
@@ -816,6 +953,7 @@ class Window2(QWidget):
         text = QHBoxLayout()
         inputs = QVBoxLayout()
         botones = QHBoxLayout()
+
         self.canvas = FigureCanvas(plt.Figure())
         layout.addWidget(self.canvas)
 
@@ -898,130 +1036,56 @@ class Window2(QWidget):
         self.label_resultado.setText("Probabilidad dentro del rango: ")
         self.canvas.figure.clear()
         self.canvas.draw()
-        
-    def combinaciones(self):
-        panel = QWidget()
-        layout = QVBoxLayout()
-        labels = QVBoxLayout()
-        text = QVBoxLayout()
-        inputs = QHBoxLayout()
-        
-        combo = QComboBox()
-        combo.addItem("Combinaciones sin repetición")
-        combo.addItem("Combinaciones con repetición")
-        combo.addItem("Permutaciones sin repetición")
-        combo.addItem("Permutaciones con repetición")
-        combo.addItem("Permutaciones sin repetición (n!)")
-        combo.addItem("Permutaciones circulares")
-
-        label_n = QLabel("Valor de n:")
-        n_input = QLineEdit()
-        label_r = QLabel("Valor de r:")
-        r_input = QLineEdit()
-
-        boton_calcular = QPushButton("Calcular")
-        
-        label_resultado = QLabel("Resultado: ")
-
-        layout.addWidget(label_resultado)
-        labels.addWidget(label_n)
-        text.addWidget(n_input)
-        labels.addWidget(label_r)
-        text.addWidget(r_input)
-        inputs.addLayout(labels)
-        inputs.addLayout(text)
-        layout.addLayout(inputs)
-        layout.addWidget(combo)
-        layout.addWidget(boton_calcular)
-
-        boton_calcular.clicked.connect(lambda: self.calcular_combinaciones(n_input, r_input, label_resultado, combo))
-        
-        panel.setLayout(layout)
-        return panel
-
-    def calcular_combinaciones(self, n_input, r_input, label_resultado, combo):
-        try:
-            n = int(n_input.text())
-            r = int(r_input.text())
-
-            tipo = combo.currentText()
-            if tipo == "Combinaciones sin repetición":
-                res = combSinRep(n, r)
-            elif tipo == "Combinaciones con repetición":
-                res = combConRep(n, r)
-            elif tipo == "Permutaciones sin repetición":
-                res = perSinRep(n, r)
-            elif tipo == "Permutaciones con repetición":
-                res = perConRep(n, r)
-            elif tipo == "Permutaciones sin repetición (n!)":
-                res = perSinRepAll(n)
-            elif tipo == "Permutaciones circulares":
-                res = perCir(n)
-
-            label_resultado.setText(f"Resultado: {round(res, 4)}")
-        except ValueError:
-            label_resultado.setText("Por favor, ingresa valores válidos para n y r.")
 
     def normal(self):
         panel = QWidget()
-        layout = QVBoxLayout()
-        layoutBotones = QHBoxLayout()
-
-        self.grafica_layout = QVBoxLayout()
-        layout.addLayout(self.grafica_layout)
+        layout = QVBoxLayout(panel)
+        self.figura = Figure()
+        self.canvas = FigureCanvas(self.figura)
+        layout.addWidget(self.canvas)
 
         layoutH = QVBoxLayout()
-
         self.resultado_normal = QLabel("")
         layout.addWidget(self.resultado_normal)
-
+        
         label_layout = QHBoxLayout()
         label_layout.addWidget(QLabel("Valor (x):"))
         label_layout.addWidget(QLabel("Media (μ):"))
         label_layout.addWidget(QLabel("Desviación estándar (σ):"))
         label_layout.addWidget(QLabel("Tipo de distribución:"))
-
+        
         textfield_layout = QHBoxLayout()
         self.x_input_normal = QLineEdit()
         self.mu_input_normal = QLineEdit()
         self.sigma_input_normal = QLineEdit()
-
         textfield_layout.addWidget(self.x_input_normal)
         textfield_layout.addWidget(self.mu_input_normal)
         textfield_layout.addWidget(self.sigma_input_normal)
-
+        
         self.combo_acumulado_normal = QComboBox()
         self.combo_acumulado_normal.addItems(["Elija una opción", "Acumulativa", "No acumulativa"])
         textfield_layout.addWidget(self.combo_acumulado_normal)
-
+        
         layoutH.addLayout(label_layout)
         layoutH.addLayout(textfield_layout)
-
+        layoutBotones = QHBoxLayout()
         boton_calcular_normal = QPushButton("Calcular Normal")
         boton_calcular_normal.clicked.connect(self.calcular_normal)
-        layout.addLayout(layoutH)
         layoutBotones.addWidget(boton_calcular_normal)
-
+        
         boton_limpiar_normal = QPushButton("Limpiar")
         boton_limpiar_normal.clicked.connect(self.limpiar_normal)
         layoutBotones.addWidget(boton_limpiar_normal)
-
+        
+        layout.addLayout(layoutH)
         layout.addLayout(layoutBotones)
-        panel.setLayout(layout)
+        
         return panel
 
     def graficar_normal(self, mu, sigma, acumulado=False):
-        for i in reversed(range(self.grafica_layout.count())):
-            widget = self.grafica_layout.itemAt(i).widget()
-            if widget is not None:
-                widget.deleteLater()
-
-        figura = Figure()
-        canvas = FigureCanvas(figura)
-        self.grafica_layout.addWidget(canvas) 
-
+        self.figura.clear()
         x = np.linspace(mu - 4 * sigma, mu + 4 * sigma, 1000)
-        ax = figura.add_subplot(111)
+        ax = self.figura.add_subplot(111)
 
         if acumulado:
             y = norm.cdf(x, mu, sigma)
@@ -1042,15 +1106,19 @@ class Window2(QWidget):
         ax.legend()
         ax.grid()
 
-        canvas.draw()
+        self.canvas.draw()
 
     def calcular_normal(self):
         try:
             x = float(self.x_input_normal.text())
             mu = float(self.mu_input_normal.text())
             sigma = float(self.sigma_input_normal.text())
+
+            if sigma <= 0:
+                self.resultado_normal.setText("Por favor, ingrese un valor positivo para la desviación estándar.")
+                return
         except ValueError:
-            self.resultado_normal.setText("Por favor, ingrese valores válidos para proseguir")
+            self.resultado_normal.setText("Por favor, ingrese valores válidos para proseguir.")
             return
 
         acumulado = self.combo_acumulado_normal.currentText() == "Acumulativa"
@@ -1078,11 +1146,8 @@ class Window2(QWidget):
         self.sigma_input_normal.clear()
         self.combo_acumulado_normal.setCurrentIndex(0)
         self.resultado_normal.clear()
-
-        for i in reversed(range(self.grafica_layout.count())):
-            widget = self.grafica_layout.itemAt(i).widget()
-            if widget is not None:
-                widget.deleteLater()
+        self.figura.clear()
+        self.canvas.draw()
 
     def poisson_panel(self):
         panel = QWidget()
