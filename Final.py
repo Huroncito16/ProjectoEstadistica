@@ -893,7 +893,7 @@ class Window2(QWidget):
         boton_calcular3 = QPushButton("Calcular")
         boton_limpiar3 = QPushButton("Limpiar")
         label_resultado3 = QLabel("Resultado: ")
-        title3 = QLabel("Permutacion")
+        title3 = QLabel("Otras permutaciones")
 
         layout3.addWidget(title3)
         layout3.addWidget(label_resultado3)
