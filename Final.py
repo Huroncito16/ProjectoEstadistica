@@ -316,8 +316,8 @@ class Window1(QWidget):
                 
         Layout_inter.addWidget(self.table_Inter)
         Layout_inter.addWidget(self.table_resul_inter)
-        Layout_inter.addWidget(abrir_ventana_button)
         Layout_inter.addWidget(actualizar_button)
+        Layout_inter.addWidget(abrir_ventana_button)
         intervalos.setLayout(Layout_inter)
 
         return intervalos
@@ -401,11 +401,12 @@ class Window1(QWidget):
         panel_label_col2 = QVBoxLayout()
         panel_text_col2 = QVBoxLayout()
 
-        img = QVBoxLayout()
-        image = QLabel(self)
-        pixmap = QPixmap("./img/banner_delgado.jpg")
-        image.setPixmap(pixmap)
-        img.addWidget(image)
+        banner_layout = QHBoxLayout()
+        banner = QLabel()
+        pixmap = QPixmap("./img/Banner_delgado.jpg")
+        banner.setPixmap(pixmap.scaled(800, 250))
+        banner_layout.addWidget(banner)
+        layout.addLayout(banner_layout)
 
         if self.saved_file_path:
             datos = leerDatos(self.saved_file_path)
@@ -468,7 +469,6 @@ class Window1(QWidget):
         layout_Horizontal.addLayout(panel_label_col2)
         layout_Horizontal.addLayout(panel_text_col2)
 
-        layout.addLayout(img)
         layout.addLayout(layout_Horizontal)
         layout.addWidget(self.update_button)
 
@@ -954,8 +954,8 @@ class Window2(QWidget):
         inputs = QVBoxLayout()
         botones = QHBoxLayout()
 
-        self.canvas = FigureCanvas(plt.Figure())
-        layout.addWidget(self.canvas)
+        self.canvasInv = FigureCanvas(plt.Figure())
+        layout.addWidget(self.canvasInv)
 
         labelMedia = QLabel("Media (μ):")
         self.textMedia = QLineEdit(" ")
@@ -963,13 +963,13 @@ class Window2(QWidget):
         self.textDesviacion = QLineEdit(" ")
         labelRango = QLabel("Rango (± alrededor de μ):")
         self.textRango = QLineEdit(" ")
-        
+
         self.label_resultado = QLabel("Probabilidad dentro del rango: ")
         layout.addWidget(self.label_resultado)
-        
+
         boton_calcular = QPushButton("Calcular")
         boton_calcular.clicked.connect(self.calcular_Inv)
-        
+
         boton_limpiar = QPushButton("Limpiar")
         boton_limpiar.clicked.connect(self.limpiar_campos)
 
@@ -981,34 +981,18 @@ class Window2(QWidget):
         text.addWidget(self.textRango)
         inputs.addLayout(labels)
         inputs.addLayout(text)
-        
+
         layout.addLayout(inputs)
         botones.addWidget(boton_calcular)
         botones.addWidget(boton_limpiar)
         layout.addLayout(botones)
-        
+
         panel.setLayout(layout)
         return panel
 
-    def calcular_Inv(self):
-        try:
-            media = float(self.textMedia.text())
-            desviacion = float(self.textDesviacion.text())
-            rango = float(self.textRango.text())
-            lim_inferior = media - rango
-            lim_superior = media + rango
-
-            probabilidad = norm.cdf(lim_superior, loc=media, scale=desviacion) - norm.cdf(lim_inferior, loc=media, scale=desviacion)
-            self.label_resultado.setText(f"Probabilidad dentro del rango: {probabilidad:.4f}")
-
-            self.graficar_Norm_Inv(media, desviacion, lim_inferior, lim_superior)
-
-        except ValueError:
-            self.label_resultado.setText("Ingrese valores válidos")
-
     def graficar_Norm_Inv(self, media, desviacion, lim_inferior, lim_superior):
-        ax = self.canvas.figure.add_subplot(111)
-        ax.clear()
+        ax = self.canvasInv.figure.add_subplot(111)
+        ax.clear()  # Limpiamos el contenido del gráfico actual
 
         x = np.linspace(media - 4 * desviacion, media + 4 * desviacion, 1000)
         y = norm.pdf(x, loc=media, scale=desviacion)
@@ -1027,15 +1011,32 @@ class Window2(QWidget):
         ax.legend()
         ax.grid()
 
-        self.canvas.draw()
+        self.canvasInv.draw()
+
+    def calcular_Inv(self):
+        self.canvasInv.figure.clear()  # Limpiar la figura antes de graficar
+        try:
+            media = float(self.textMedia.text())
+            desviacion = float(self.textDesviacion.text())
+            rango = float(self.textRango.text())
+            lim_inferior = media - rango
+            lim_superior = media + rango
+
+            probabilidad = norm.cdf(lim_superior, loc=media, scale=desviacion) - norm.cdf(lim_inferior, loc=media, scale=desviacion)
+            self.label_resultado.setText(f"Probabilidad dentro del rango: {probabilidad:.4f}")
+
+            self.graficar_Norm_Inv(media, desviacion, lim_inferior, lim_superior)
+
+        except ValueError:
+            self.label_resultado.setText("Ingrese valores válidos")
 
     def limpiar_campos(self):
         self.textMedia.setText(" ")
         self.textDesviacion.setText(" ")
         self.textRango.setText(" ")
         self.label_resultado.setText("Probabilidad dentro del rango: ")
-        self.canvas.figure.clear()
-        self.canvas.draw()
+        self.canvasInv.figure.clear()  # Limpiar la figura de la gráfica
+        self.canvasInv.draw()
 
     def normal(self):
         panel = QWidget()
@@ -1087,14 +1088,9 @@ class Window2(QWidget):
         x = np.linspace(mu - 4 * sigma, mu + 4 * sigma, 1000)
         ax = self.figura.add_subplot(111)
 
-        if acumulado:
-            y = norm.cdf(x, mu, sigma)
-            ax.set_title('Función de Distribución Acumulativa (CDF)')
-            ax.fill_between(x, y, color='skyblue', alpha=0.5)
-        else:
-            y = norm.pdf(x, mu, sigma)
-            ax.set_title('Función de Densidad de Probabilidad (PDF)')
-            ax.fill_between(x, y, color='skyblue', alpha=0.5)
+        y = norm.pdf(x, mu, sigma)
+        ax.set_title('Función de Densidad de Probabilidad (PDF)')
+        ax.fill_between(x, y, color='skyblue', alpha=0.5)
 
         ax.plot(x, y, color='blue', label='Distribución normal')
         ax.axvline(mu, color='r', linestyle='--', label='Media (μ)')
